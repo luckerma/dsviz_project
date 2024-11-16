@@ -1,8 +1,6 @@
 library(dplyr)
 library(readr)
 library(lubridate)
-library(shiny)
-
 
 
 read_data <- function(year) {
@@ -31,6 +29,12 @@ read_data <- function(year) {
     } else {
         nb_s1_df$jour <- dmy(nb_s1_df$jour)
     }
+
+    # "nb_vald" to numeric
+    nb_s1_df <- nb_s1_df |>
+        mutate(
+            nb_vald = as.numeric(nb_vald)
+        )
 
     # "puorc_validations" to numeric
     profil_s1_df <- profil_s1_df |>
@@ -61,6 +65,11 @@ read_data <- function(year) {
         nb_s2_df$jour <- dmy(nb_s2_df$jour)
     }
 
+    nb_s2_df <- nb_s2_df |>
+        mutate(
+            nb_vald = as.numeric(nb_vald)
+        )
+
     profil_s2_df <- profil_s2_df |>
         mutate(
             pourc_validations = as.numeric(gsub(",", ".", pourc_validations))
@@ -76,7 +85,6 @@ read_data <- function(year) {
     return(list(nb_vald = nb_vald, profil = profil))
 }
 
-# TODO: Define numeric columns first
 remove_outliers <- function(data) {
     for (col in colnames(data)) {
         if (is.numeric(data[[col]])) {

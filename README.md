@@ -28,5 +28,25 @@ Spatial Data: https://eu.ftp.opendatasoft.com/stif/Reflex/REF_ZdA.zip
 ## R
 
 ```R
-install.packages(c("dplyr", "readr", "lubridate, shiny, sf"))
+install.packages(c("dplyr", "readr", "lubridate, shiny, sf, rsconnect"))
 ```
+
+## Shiny
+
+### Local Server
+
+```R
+library(shiny)
+shiny::runApp("./")
+```
+
+http://127.0.0.1:4369
+
+### Remote Server
+
+```R
+library(rsconnect)
+rsconnect::deployApp("./", appName="DSViz_Project")
+```
+
+https://luckerma.shinyapps.io/DSViz_Project/
