@@ -1,10 +1,11 @@
-# install.packages(c("dplyr", "readr", "lubridate"))
-
 library(dplyr)
 library(readr)
 library(lubridate)
+library(shiny)
 
-process_year_data <- function(year) {
+
+
+read_data <- function(year) {
     # Data paths
     nb_s1 <- sprintf("data/data-rf-%s/%s_S1_NB_FER.txt", year, year)
     profil_s1 <- sprintf("data/data-rf-%s/%s_S1_PROFIL_FER.txt", year, year)
@@ -24,12 +25,18 @@ process_year_data <- function(year) {
     colnames(nb_s1_df) <- tolower(colnames(nb_s1_df))
     colnames(profil_s1_df) <- tolower(colnames(profil_s1_df))
 
-    # "Jour" to date format
+    # "jour" to date format
     if (year == "2023") {
         nb_s1_df$jour <- ymd(nb_s1_df$jour)
     } else {
         nb_s1_df$jour <- dmy(nb_s1_df$jour)
     }
+
+    # "puorc_validations" to numeric
+    profil_s1_df <- profil_s1_df |>
+        mutate(
+            pourc_validations = as.numeric(gsub(",", ".", pourc_validations))
+        )
 
     # Handle missing values (drop rows with missing values) / TODO: handle missing values
     nb_s1_df <- na.omit(nb_s1_df)
@@ -49,10 +56,15 @@ process_year_data <- function(year) {
     colnames(profil_s2_df) <- tolower(colnames(profil_s2_df))
 
     if (year == "2023") {
-        nb_s1_df$jour <- ymd(nb_s1_df$jour)
+        nb_s2_df$jour <- ymd(nb_s2_df$jour)
     } else {
-        nb_s1_df$jour <- dmy(nb_s1_df$jour)
+        nb_s2_df$jour <- dmy(nb_s2_df$jour)
     }
+
+    profil_s2_df <- profil_s2_df |>
+        mutate(
+            pourc_validations = as.numeric(gsub(",", ".", pourc_validations))
+        )
 
     nb_s2_df <- na.omit(nb_s2_df)
     profil_s2_df <- na.omit(profil_s2_df)
@@ -64,17 +76,57 @@ process_year_data <- function(year) {
     return(list(nb_vald = nb_vald, profil = profil))
 }
 
-# Process data for 2018-2022
-# data_2018 <- process_year_data("2018")
-# print(data_2018)
-# data_2019 <- process_year_data("2019")
-# print(data_2019)
-# data_2020 <- process_year_data("2020")
-# print(data_2020)
-# data_2021 <- process_year_data("2021")
-# print(data_2021)
-# data_2022 <- process_year_data("2022")
-# print(data_2022)
-data_2023 <- process_year_data("2023")
-print(data_2023$nb_vald)
-print(data_2023$profil)
+# TODO: Define numeric columns first
+remove_outliers <- function(data) {
+    for (col in colnames(data)) {
+        if (is.numeric(data[[col]])) {
+            q1 <- quantile(data, 0.25)
+            q3 <- quantile(data, 0.75)
+            iqr <- q3 - q1
+            lower_bound <- q1 - 1.5 * iqr
+            upper_bound <- q3 + 1.5 * IQR
+
+            # Remove rows with outliers
+            clean_column <- data[data >= lower_bound & data <= upper_bound]
+            data <- data[data[[col]] %in% clean_column, ]
+        }
+    }
+
+    return(data)
+}
+
+read_clean_data <- function(year) {
+    data <- read_data(year)
+
+    original_nb_vald_rows <- nrow(data$nb_vald)
+    original_profil_rows <- nrow(data$profil)
+
+    message(paste("Summary for year", year, "before cleaning:"))
+    print(summary(data$nb_vald))
+    print(summary(data$profil))
+
+    data$nb_vald <- remove_outliers(data$nb_vald)
+    data$profil <- remove_outliers(data$profil)
+
+    cleaned_nb_vald_rows <- nrow(data$nb_vald)
+    cleaned_profil_rows <- nrow(data$profil)
+
+    message(paste("Summary for year", year, "after cleaning:"))
+    print(summary(data$nb_vald))
+    print(summary(data$profil))
+
+    message(paste("Rows removed from nb_vald for year", year, ":", original_nb_vald_rows - cleaned_nb_vald_rows))
+    message(paste("Rows removed from profil for year", year, ":", original_profil_rows - cleaned_profil_rows))
+
+    return(data)
+}
+
+export_data <- function(data, year) {
+    write_csv(data$nb_vald, sprintf("data/cleaned_data/%s_nb_vald.csv", year))
+    write_csv(data$profil, sprintf("data/cleaned_data/%s_profil.csv", year))
+}
+
+years <- c("2018", "2019", "2020", "2021", "2022", "2023")
+for (year in years) {
+    export_data(read_clean_data(year), year)
+}
