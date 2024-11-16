@@ -80,18 +80,16 @@ read_data <- function(year) {
 remove_outliers <- function(data) {
     for (col in colnames(data)) {
         if (is.numeric(data[[col]])) {
-            q1 <- quantile(data, 0.25)
-            q3 <- quantile(data, 0.75)
+            q1 <- quantile(data[[col]], 0.25, na.rm = TRUE)
+            q3 <- quantile(data[[col]], 0.75, na.rm = TRUE)
             iqr <- q3 - q1
             lower_bound <- q1 - 1.5 * iqr
-            upper_bound <- q3 + 1.5 * IQR
+            upper_bound <- q3 + 1.5 * iqr
 
-            # Remove rows with outliers
-            clean_column <- data[data >= lower_bound & data <= upper_bound]
-            data <- data[data[[col]] %in% clean_column, ]
+            # Filter outliers
+            data <- data[data[[col]] >= lower_bound & data[[col]] <= upper_bound, ]
         }
     }
-
     return(data)
 }
 
