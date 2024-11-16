@@ -1,0 +1,41 @@
+Package: DSVizProject
+Type: Package
+Title: Data Science and Visualization Project
+Version: 0.1.0
+Authors@R: 
+    c(  person(given = "Luca",
+            family = "Uckermann",
+            role = c("aut", "cre"),
+            email = "l.uckermann@web.de"),
+        person(given = "Nikethan",
+            family = "",
+            role = "aut",
+            email = ""),
+        person(given = "Cong Son",
+            family = "",
+            role = "aut",
+            email = ""),
+        person(given = "Adel",
+            family = "",
+            role = "aut",
+            email = ""),
+        person(given = "Francky",
+            family = "",
+            role = "aut",
+            email = ""))
+Maintainer: Luca <l.uckermann@web.de>
+Description: Data Science and Visualization Project (IDF data)
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+Imports:
+    shiny,
+    dplyr,
+    ggplot2,
+    lubridate,
+    rsconnect,
+    sf,
+    readr,
+    tidyr
+Depends: R (>= 4.0.0)
