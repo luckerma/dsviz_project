@@ -21,6 +21,9 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
 
+      - name: Export clean data
+        run: R -e 'source("cleaning.R")'
+
       - name: Deploy Shiny App
         run: |
           R -e 'rsconnect::setAccountInfo(name="${{ secrets.SHINYAPPS_USER }}", token="${{ secrets.SHINYAPPS_TOKEN }}", secret="${{ secrets.SHINYAPPS_SECRET }}")'

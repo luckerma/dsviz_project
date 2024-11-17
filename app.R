@@ -27,10 +27,12 @@ combined_nb_vald <- bind_rows(nb_vald_list)
 combined_profil <- bind_rows(profil_list)
 
 colnames(zones) <- tolower(colnames(zones))
+zones <- zones |>
+    mutate(zdaid = as.character(zdaid))
 
 zones_spatial <- zones_spatial |>
     st_transform(4326) |>
-    mutate(idrefa_lda = as.character(idrefa_lda))
+    mutate(id_refa = as.character(id_refa))
 centroids <- st_centroid(zones_spatial)
 zones_spatial$longitude <- st_coordinates(centroids)[, 1]
 zones_spatial$latitude <- st_coordinates(centroids)[, 2]
@@ -44,8 +46,8 @@ aggregated_profil <- combined_profil |>
     group_by(id_refa_lda) |>
     summarize(avg_pourc_validations = mean(pourc_validations, na.rm = TRUE))
 
-combined_full <- left_join(combined_nb_vald, combined_profil, by = "id_refa_lda")
-spatial_data <- left_join(zones_spatial, zones, by = c("idrefa" = "zdaid"))
+spatial_data <- left_join(zones_spatial, zones, by = c("id_refa" = "zdaid"))
+spatial_data <- left_join(spatial_data, aggregated_nb_vald, by = c("id_refa" = "id_refa_lda"))
 
 # Holidays and school breaks
 holiday_data <- get_holidays()
@@ -127,14 +129,14 @@ server <- function(input, output, session) {
     observeEvent(input$update_map, {
         selected_station <- input$station
         station_data <- spatial_data |>
-            filter(libelle_arret == selected_station)
+            filter(nom_lda == selected_station)
 
         leafletProxy("stationMap") |>
             clearMarkers() |>
             addCircleMarkers(
                 data = station_data,
                 lng = ~longitude, lat = ~latitude,
-                popup = ~ paste("Station:", libelle_arret, "<br>Average Ridership:", mean(nb_vald, na.rm = TRUE)),
+                popup = ~ paste("Station:", nom_lda, "<br>Average Ridership:", mean(nb_vald, na.rm = TRUE)),
                 color = "red"
             )
     })
