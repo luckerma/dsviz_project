@@ -28,7 +28,7 @@ Spatial Data: https://eu.ftp.opendatasoft.com/stif/Reflex/REF_ZdA.zip
 ## R
 
 ```R
-install.packages(c("dplyr", "readr", "lubridate, shiny, sf, rsconnect"))
+install.packages(c("dplyr", "readr", "lubridate", "shiny", "sf", "rsconnect", "leaflet"))
 ```
 
 ## Shiny
