@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - main
-      - "4-dashboard-development-using-shiny"
+      - 4-dashboard-development-using-shiny
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -21,6 +22,11 @@ jobs:
 
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
+
+      - name: Export cleaned data
+        run: |
+          mkdir 'data/cleaned_data'
+          R -e 'source("cleaning.R")'
 
       - name: Deploy Shiny App
         run: |
