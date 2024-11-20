@@ -31,4 +31,4 @@ jobs:
       - name: Deploy Shiny App
         run: |
           R -e 'rsconnect::setAccountInfo(name="${{ secrets.SHINYAPPS_USER }}", token="${{ secrets.SHINYAPPS_TOKEN }}", secret="${{ secrets.SHINYAPPS_SECRET }}")'
-          R -e 'rsconnect::deployApp("./", appName="DSViz_Project", forceUpdate=TRUE)'
+          R -e 'rsconnect::deployApp("./", appName="DSViz_Project", forceUpdate=TRUE, appFiles=c("app.R", "helper.R", list.files("data/cleaned_data/", full.names=TRUE, recursive=TRUE), list.files("data/REF_ZdA/", full.names=TRUE, recursive=TRUE), "data/zones.csv"))'

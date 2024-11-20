@@ -8,50 +8,44 @@ library(sf)
 source("helper.R")
 
 ### DATA ###
-zones <- read_delim("data/zones.csv", delim = ";")
-zones_spatial <- st_read("data/REF_ZdA/PL_ZDL_R_14_11_2024.shp", crs = 2154)
 
-# Load and combine yearly data
+# Yearly Data
 years <- c("2018", "2019", "2020", "2021", "2022")
-nb_vald_list <- lapply(years, function(year) load_data(year)$nb_vald_df)
-combined_nb_vald <- bind_rows(nb_vald_list)
+# years <- c("2018")
+yearly_data <- lapply(years, function(year) load_data(year))
+combined_nb_vald <- bind_rows(lapply(yearly_data, `[[`, "nb_vald_df"))
+combined_profil <- bind_rows(lapply(yearly_data, `[[`, "profil_df"))
 
-# Prepare Spatial Data
-zones_spatial <- zones_spatial |>
-    st_transform(4326) |>
-    mutate(idrefa_lda = as.character(idrefa_lda))
-centroids <- st_centroid(zones_spatial)
-zones_spatial$longitude <- st_coordinates(centroids)[, 1]
-zones_spatial$latitude <- st_coordinates(centroids)[, 2]
+# Spatial Data
+zones_spatial <- load_spatial_data()
 
-# Holidays and School Breaks
-holiday_data <- get_holidays()
-holidays <- holiday_data$holidays
-vacation_days <- holiday_data$vacation_days
-
-combined_nb_vald <- combined_nb_vald |>
-    mutate(
-        type = case_when(
-            jour %in% holidays ~ "Holiday",
-            jour %in% vacation_days ~ "Vacation",
-            !jour %in% holidays & !jour %in% vacation_days ~ "Normal",
-        )
-    )
+# Yearly data for nb_vald_df
+yearly_nb_vald <- combined_nb_vald |>
+    mutate(year = year(jour)) |>
+    group_by(id_refa_lda, year) |>
+    summarise(nb_vald = sum(nb_vald, na.rm = TRUE), .groups = "drop")
 
 ### UI ###
 ui <- fluidPage(
     titlePanel("DSViz: IDF Ridership Analysis"),
     sidebarLayout(
         sidebarPanel(
-            dateInput("start_date1", "Starting Date for Period 1:", value = "2018-01-01"),
-            dateInput("start_date2", "Starting Date for Period 2:", value = "2022-01-01"),
-            numericInput("period_days", "Number of Days for Comparison:", value = 7, min = 1, step = 1),
-            checkboxInput("show_holidays", "Show Holidays", value = TRUE),
-            checkboxInput("show_vacations", "Show Vacations", value = TRUE),
-            selectInput("station", "Select Station:", choices = unique(combined_nb_vald$libelle_arret))
+            conditionalPanel(
+                condition = "input.tabs == 'Comparison'",
+                dateInput("start_date1", "Starting Date for Period 1:", value = "2018-01-01"),
+                dateInput("start_date2", "Starting Date for Period 2:", value = "2022-01-01"),
+                numericInput("period_days", "Number of Days for Comparison:", value = 7, min = 1, step = 1)
+            ),
+            conditionalPanel(
+                condition = "input.tabs == 'Stations Map'",
+                sliderInput("min_vald", "Minimum Validations:", min = min(yearly_nb_vald$nb_vald), max = max(yearly_nb_vald$nb_vald), value = mean(yearly_nb_vald$nb_vald), step = max(yearly_nb_vald$nb_vald) / 100),
+                selectInput("station", "Select Station:", choices = unique(combined_nb_vald$libelle_arret)),
+                selectInput("year", "Select Year:", choices = years)
+            )
         ),
         mainPanel(
             tabsetPanel(
+                id = "tabs",
                 tabPanel(
                     "Total Validations",
                     fluidRow(
@@ -80,7 +74,9 @@ ui <- fluidPage(
                     "Stations Map",
                     fluidRow(
                         column(12, leafletOutput("stationMap")),
-                        column(12, verbatimTextOutput("stationStats"))
+                        column(12, verbatimTextOutput("stationStats")),
+                        column(12, plotOutput("profilHourlyPlot")),
+                        column(12, plotOutput("profilDayTypePlot"))
                     )
                 )
             )
@@ -90,20 +86,6 @@ ui <- fluidPage(
 
 ### SERVER ###
 server <- function(input, output, session) {
-    # Filtered Data
-    filtered_data <- reactive({
-        data <- combined_nb_vald
-
-        if (!input$show_holidays) {
-            data <- data |> filter(type != "Holiday")
-        }
-        if (!input$show_vacations) {
-            data <- data |> filter(type != "Vacation")
-        }
-
-        data
-    })
-
     # Comparison Data
     comparison_data <- reactive({
         days <- as.integer(input$period_days)
@@ -134,7 +116,7 @@ server <- function(input, output, session) {
             summarize(total_validations = sum(nb_vald, na.rm = TRUE))
 
         ggplot(yearly_sum, aes(x = year, y = total_validations)) +
-            geom_col(fill = "skyblue") +
+            geom_col() +
             labs(title = "Total Validations (Yearly)", x = "Year", y = "Total Validations") +
             theme_minimal()
     })
@@ -147,7 +129,7 @@ server <- function(input, output, session) {
             summarize(total_validations = sum(nb_vald, na.rm = TRUE))
 
         ggplot(monthly_sum, aes(x = month, y = total_validations)) +
-            geom_col(fill = "lightgreen") +
+            geom_col() +
             labs(title = "Total Validations (Monthly)", x = "Month", y = "Total Validations") +
             theme_minimal() +
             theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -155,12 +137,12 @@ server <- function(input, output, session) {
 
     # Yearly Trend Plot
     output$yearlyTrendPlot <- renderPlot({
-        yearly_trend <- filtered_data() |>
+        yearly_trend <- combined_nb_vald |>
             mutate(year = year(jour)) |>
-            group_by(year, type) |>
+            group_by(year) |>
             summarize(avg_vald = mean(nb_vald, na.rm = TRUE))
 
-        ggplot(yearly_trend, aes(x = year, y = avg_vald, color = type, group = type)) +
+        ggplot(yearly_trend, aes(x = year, y = avg_vald)) +
             geom_line(size = 1) +
             geom_point(size = 3) +
             labs(title = "Yearly Trend", x = "Year", y = "Average Validations") +
@@ -169,12 +151,12 @@ server <- function(input, output, session) {
 
     # Monthly Trend Plot
     output$monthlyTrendPlot <- renderPlot({
-        monthly_trend <- filtered_data() |>
+        monthly_trend <- combined_nb_vald |>
             mutate(month = floor_date(jour, "month")) |>
-            group_by(month, type) |>
+            group_by(month) |>
             summarize(mean_vald = mean(nb_vald, na.rm = TRUE))
 
-        ggplot(monthly_trend, aes(x = month, y = mean_vald, color = type, group = type)) +
+        ggplot(monthly_trend, aes(x = month, y = mean_vald)) +
             geom_line(size = 1) +
             geom_point(size = 3) +
             labs(title = "Monthly Trend", x = "Month", y = "Average Validations") +
@@ -183,13 +165,14 @@ server <- function(input, output, session) {
 
     # Weekday Trend Plot
     output$weekdayTrendPlot <- renderPlot({
-        weekday_trend <- filtered_data() |>
+        weekday_trend <- combined_nb_vald |>
             mutate(weekday = wday(jour, label = TRUE, week_start = 1)) |>
-            group_by(weekday, type) |>
-            summarize(avg_ridership = mean(nb_vald, na.rm = TRUE))
+            group_by(weekday) |>
+            summarize(mean_vald = mean(nb_vald, na.rm = TRUE))
 
-        ggplot(weekday_trend, aes(x = weekday, y = avg_ridership, fill = type)) +
-            geom_bar(stat = "identity", position = "dodge") +
+        ggplot(weekday_trend, aes(x = weekday, y = mean_vald)) +
+            geom_line(size = 1) +
+            geom_point(size = 3) +
             labs(title = "Weekday Trend", x = "Weekday", y = "Average Validations") +
             theme_minimal()
     })
@@ -200,22 +183,17 @@ server <- function(input, output, session) {
 
         daily_trend <- data |>
             group_by(relative_day, period, original_date = jour) |>
-            summarize(avg_vald = mean(nb_vald, na.rm = TRUE))
+            summarize(avg_vald = mean(nb_vald, na.rm = TRUE), .groups = "drop")
 
         ggplot(daily_trend, aes(x = relative_day, y = avg_vald, color = period, group = period)) +
             geom_line(size = 1) +
             geom_point(size = 3) +
-            scale_x_continuous(
-                breaks = daily_trend$relative_day,
-                labels = daily_trend$original_date
-            ) +
             labs(
                 title = paste("Comparison of Two Periods (", input$period_days, " Days)", sep = ""),
                 x = "Time",
                 y = "Average Validations"
             ) +
-            theme_minimal() +
-            theme(axis.text.x = element_text(angle = 45, hjust = 1))
+            theme_minimal()
     })
 
     # Comparison Weekday Plot
@@ -224,7 +202,7 @@ server <- function(input, output, session) {
 
         weekday_trend <- data |>
             group_by(weekday = wday(jour, label = TRUE, week_start = 1), period) |>
-            summarize(avg_vald = mean(nb_vald, na.rm = TRUE))
+            summarize(avg_vald = mean(nb_vald, na.rm = TRUE), .groups = "drop")
 
         ggplot(weekday_trend, aes(x = weekday, y = avg_vald, fill = period)) +
             geom_bar(stat = "identity", position = "dodge") +
@@ -236,37 +214,32 @@ server <- function(input, output, session) {
             theme_minimal()
     })
 
-    # Comparison Days Plot Total
+    # Comparison Days Plot - Total
     output$comparisonDaysPlotTotal <- renderPlot({
         data <- comparison_data()
 
         daily_trend <- data |>
             group_by(relative_day, period, original_date = jour) |>
-            summarize(total_validations = sum(nb_vald, na.rm = TRUE))
+            summarize(total_validations = sum(nb_vald, na.rm = TRUE), .groups = "drop")
 
         ggplot(daily_trend, aes(x = relative_day, y = total_validations, color = period, group = period)) +
             geom_line(size = 1) +
             geom_point(size = 3) +
-            scale_x_continuous(
-                breaks = daily_trend$relative_day,
-                labels = daily_trend$original_date
-            ) +
             labs(
                 title = paste("Comparison of Two Periods (", input$period_days, " Days)", sep = ""),
                 x = "Time",
                 y = "Total Validations"
             ) +
-            theme_minimal() +
-            theme(axis.text.x = element_text(angle = 45, hjust = 1))
+            theme_minimal()
     })
 
-    # Comparison Weekday Plot Total
+    # Comparison Weekday Plot - Total
     output$comparisonWeekdayPlotTotal <- renderPlot({
         data <- comparison_data()
 
         weekday_trend <- data |>
             group_by(weekday = wday(jour, label = TRUE, week_start = 1), period) |>
-            summarize(total_validations = sum(nb_vald, na.rm = TRUE))
+            summarize(total_validations = sum(nb_vald, na.rm = TRUE), .groups = "drop")
 
         ggplot(weekday_trend, aes(x = weekday, y = total_validations, fill = period)) +
             geom_bar(stat = "identity", position = "dodge") +
@@ -278,28 +251,50 @@ server <- function(input, output, session) {
             theme_minimal()
     })
 
+    filtered_stations <- reactive({
+        filtered_data <- combined_nb_vald |>
+            filter(year(jour) == as.numeric(input$year)) |>
+            group_by(libelle_arret, id_refa_lda) |>
+            summarize(total_validations = sum(nb_vald, na.rm = TRUE), .groups = "drop") |>
+            filter(total_validations >= input$min_vald)
+    })
+
+    # Update station dropdown
+    observe({
+        updateSelectInput(
+            session,
+            "station",
+            choices = filtered_stations()$libelle_arret
+        )
+    })
+
     # Station Map
     output$stationMap <- renderLeaflet({
-        leaflet(zones_spatial) |>
+        filtered_zones_spatial <- zones_spatial |>
+            filter(idrefa_lda %in% filtered_stations()$id_refa_lda)
+
+        leaflet(filtered_zones_spatial) |>
             addTiles() |>
             addCircleMarkers(
                 lng = ~longitude,
                 lat = ~latitude,
                 popup = ~ paste("Station:", nom_lda),
-                layerId = ~nom_lda,
+                layerId = ~idrefa_lda,
                 color = "red"
             )
     })
 
     observeEvent(input$stationMap_marker_click, {
         click <- input$stationMap_marker_click
-        selected_station <- click$id
+        selected_station_id <- click$id
 
-        if (!is.null(selected_station)) {
+        selected_station_name <- combined_nb_vald$libelle_arret[combined_nb_vald$id_refa_lda == selected_station_id]
+
+        if (!is.null(selected_station_name) && length(selected_station_name) > 0) {
             updateSelectInput(
                 session,
                 inputId = "station",
-                selected = selected_station
+                selected = selected_station_name
             )
         }
     })
@@ -310,7 +305,41 @@ server <- function(input, output, session) {
         station_data <- combined_nb_vald |>
             filter(libelle_arret == selected_station)
 
-        summary(station_data$nb_vald)
+        # Add profil data
+        station_profil <- combined_profil |>
+            filter(id_refa_lda == combined_nb_vald$id_refa_lda[combined_nb_vald$libelle_arret == selected_station])
+
+        list(
+            ValidationsSummaryTotal = summary(station_data$nb_vald),
+            ValidationsSummaryYear = station_data |>
+                group_by(year(jour)) |>
+                summarize(total_validations = sum(nb_vald, na.rm = TRUE)) |>
+                summary(),
+            ProfilData = station_profil |>
+                group_by(cat_jour) |>
+                summarize(
+                    AvgPourcValidations = mean(pourc_validations, na.rm = TRUE),
+                    TotalPourcValidations = sum(pourc_validations, na.rm = TRUE)
+                )
+        )
+    })
+
+    # Hourly Trends Plot
+    output$profilHourlyPlot <- renderPlot({
+        selected_station <- input$station
+        station_profil <- combined_profil |>
+            filter(id_refa_lda == combined_nb_vald$id_refa_lda[combined_nb_vald$libelle_arret == selected_station])
+
+        ggplot(station_profil, aes(x = trnc_horr_60, y = pourc_validations, color = cat_jour)) +
+            geom_line(size = 1) +
+            geom_point(size = 3) +
+            labs(
+                title = "Hourly Validation Profiles by Day Type",
+                x = "Hourly Interval",
+                y = "Percentage of Daily Validations"
+            ) +
+            theme_minimal() +
+            theme(axis.text.x = element_text(angle = 45, hjust = 1))
     })
 }
 

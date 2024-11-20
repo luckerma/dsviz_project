@@ -39,42 +39,32 @@ R -e 'source("cleaning.R")'
 R -e 'source("eda.R")'
 ```
 
-## Shiny
+### Shiny
 
-### Local Server
-
-```R
-library(shiny)
-shiny::runApp("./")
-```
-
-http://127.0.0.1:4369
-
-### Remote Server
-
-```R
-library(rsconnect)
-rsconnect::deployApp("./", appName="DSViz_Project", forceUpdate=TRUE)
-```
-
-https://luckerma.shinyapps.io/DSViz_Project/
-
-## Shiny
-
-### Local Server
+#### Local Server
 
 ```R
 library(shiny)
 shiny::runApp("./")
 ```
 
-http://127.0.0.1:4369
+http://127.0.0.1:<port>
 
-### Remote Server
+#### Remote Server
 
 ```R
 library(rsconnect)
-rsconnect::deployApp("./", appName="DSViz_Project")
+rsconnect::deployApp(appDir="./",
+    appName="DSViz_Project",
+    forceUpdate=TRUE,
+    appFiles=c(
+        "app.R",
+        "helper.R",
+        list.files("data/cleaned_data/", full.names=TRUE, recursive=TRUE),
+        list.files("data/REF_ZdA/", full.names=TRUE, recursive=TRUE),
+        "data/zones.csv"
+    )
+)
 ```
 
 https://luckerma.shinyapps.io/DSViz_Project/
