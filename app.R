@@ -34,12 +34,12 @@ ui <- fluidPage(
                 condition = "input.tabs == 'Comparison'",
                 dateInput("start_date1", "Starting Date for Period 1:", value = "2018-01-01"),
                 dateInput("start_date2", "Starting Date for Period 2:", value = "2022-01-01"),
-                numericInput("period_days", "Number of Days for Comparison:", value = 7, min = 1, step = 1)
+                sliderInput("period_days", "Comparison Period (Days):", value = 7, min = 1, max = 365)
             ),
             conditionalPanel(
                 condition = "input.tabs == 'Stations Map'",
                 sliderInput("min_vald", "Minimum Validations:", min = min(yearly_nb_vald$nb_vald), max = max(yearly_nb_vald$nb_vald), value = mean(yearly_nb_vald$nb_vald), step = max(yearly_nb_vald$nb_vald) / 100),
-                selectInput("station", "Select Station:", choices = unique(combined_nb_vald$libelle_arret)),
+                selectInput("station", "Select Station:", choices = unique(combined_nb_vald$libelle_arret), selected = "NOISY-CHAMPS"),
                 selectInput("year", "Select Year:", choices = years)
             )
         ),
@@ -171,8 +171,7 @@ server <- function(input, output, session) {
             summarize(mean_vald = mean(nb_vald, na.rm = TRUE))
 
         ggplot(weekday_trend, aes(x = weekday, y = mean_vald)) +
-            geom_line(size = 1) +
-            geom_point(size = 3) +
+            geom_bar(stat = "identity", position = "dodge") +
             labs(title = "Weekday Trend", x = "Weekday", y = "Average Validations") +
             theme_minimal()
     })
@@ -270,8 +269,23 @@ server <- function(input, output, session) {
 
     # Station Map
     output$stationMap <- renderLeaflet({
+        selected_station <- input$station
+
+        selected_station_ids <- combined_nb_vald |>
+            filter(libelle_arret == selected_station) |>
+            distinct(id_refa_lda) |>
+            pull(id_refa_lda)
+
+        yearly_validations <- combined_nb_vald |>
+            group_by(id_refa_lda) |>
+            summarise(total_validations = sum(nb_vald, na.rm = TRUE), .groups = "drop")
+
         filtered_zones_spatial <- zones_spatial |>
-            filter(idrefa_lda %in% filtered_stations()$id_refa_lda)
+            filter(idrefa_lda %in% filtered_stations()$id_refa_lda) |>
+            left_join(yearly_validations, by = c("idrefa_lda" = "id_refa_lda")) |>
+            mutate(
+                scaled_size = ifelse(is.na(total_validations), 5, total_validations / max(total_validations, na.rm = TRUE) * 20)
+            )
 
         leaflet(filtered_zones_spatial) |>
             addTiles() |>
@@ -280,7 +294,8 @@ server <- function(input, output, session) {
                 lat = ~latitude,
                 popup = ~ paste("Station:", nom_lda),
                 layerId = ~idrefa_lda,
-                color = "red"
+                color = ~ ifelse(idrefa_lda %in% selected_station_ids, "green", "red"),
+                radius = ~scaled_size
             )
     })
 
@@ -288,7 +303,10 @@ server <- function(input, output, session) {
         click <- input$stationMap_marker_click
         selected_station_id <- click$id
 
-        selected_station_name <- combined_nb_vald$libelle_arret[combined_nb_vald$id_refa_lda == selected_station_id]
+        selected_station_name <- combined_nb_vald |>
+            filter(id_refa_lda == selected_station_id) |>
+            distinct(libelle_arret) |>
+            pull(libelle_arret)
 
         if (!is.null(selected_station_name) && length(selected_station_name) > 0) {
             updateSelectInput(
@@ -302,44 +320,105 @@ server <- function(input, output, session) {
     # Station Stats
     output$stationStats <- renderPrint({
         selected_station <- input$station
+        if (is.null(selected_station) || selected_station == "") {
+            return("No station selected.")
+        }
+
+        selected_station_ids <- combined_nb_vald |>
+            filter(libelle_arret == selected_station) |>
+            distinct(id_refa_lda) |>
+            pull(id_refa_lda)
+
+        if (length(selected_station_ids) == 0) {
+            return(paste("No data found for station:", selected_station))
+        }
+
         station_data <- combined_nb_vald |>
-            filter(libelle_arret == selected_station)
+            filter(id_refa_lda %in% selected_station_ids)
 
-        # Add profil data
-        station_profil <- combined_profil |>
-            filter(id_refa_lda == combined_nb_vald$id_refa_lda[combined_nb_vald$libelle_arret == selected_station])
+        total_validations_summary <- station_data |>
+            filter(year(jour) == as.numeric(input$year)) |>
+            summarise(
+                TotalValidations = sum(nb_vald, na.rm = TRUE),
+                AvgDailyValidations = mean(nb_vald, na.rm = TRUE),
+                MinDailyValidations = min(nb_vald, na.rm = TRUE),
+                MaxDailyValidations = max(nb_vald, na.rm = TRUE)
+            )
 
-        list(
-            ValidationsSummaryTotal = summary(station_data$nb_vald),
-            ValidationsSummaryYear = station_data |>
-                group_by(year(jour)) |>
-                summarize(total_validations = sum(nb_vald, na.rm = TRUE)) |>
-                summary(),
-            ProfilData = station_profil |>
-                group_by(cat_jour) |>
-                summarize(
-                    AvgPourcValidations = mean(pourc_validations, na.rm = TRUE),
-                    TotalPourcValidations = sum(pourc_validations, na.rm = TRUE)
-                )
-        )
+        yearly_validations_summary <- station_data |>
+            mutate(Year = year(jour)) |>
+            group_by(Year) |>
+            summarise(
+                TotalValidations = sum(nb_vald, na.rm = TRUE),
+                AvgDailyValidations = mean(nb_vald, na.rm = TRUE)
+            )
+
+        cat("Station Statistics for: ", selected_station, "\n")
+
+        cat("\n1. Validation Summary for the Year:", input$year, "\n")
+        print(total_validations_summary)
+
+        cat("\n2. Validation Summary by Years:\n")
+        print(yearly_validations_summary)
     })
 
-    # Hourly Trends Plot
+    # Hourly Trends Plot (Day Type)
     output$profilHourlyPlot <- renderPlot({
         selected_station <- input$station
-        station_profil <- combined_profil |>
-            filter(id_refa_lda == combined_nb_vald$id_refa_lda[combined_nb_vald$libelle_arret == selected_station])
+        if (is.null(selected_station) || selected_station == "") {
+            return(NULL)
+        }
 
-        ggplot(station_profil, aes(x = trnc_horr_60, y = pourc_validations, color = cat_jour)) +
+        selected_station_ids <- combined_nb_vald |>
+            filter(libelle_arret == selected_station) |>
+            distinct(id_refa_lda) |>
+            pull(id_refa_lda)
+        if (length(selected_station_ids) == 0) {
+            return(NULL)
+        }
+
+        hourly_levels <- c(
+            "0H-1H", "1H-2H", "2H-3H", "3H-4H", "4H-5H", "5H-6H",
+            "6H-7H", "7H-8H", "8H-9H", "9H-10H", "10H-11H", "11H-12H",
+            "12H-13H", "13H-14H", "14H-15H", "15H-16H", "16H-17H",
+            "17H-18H", "18H-19H", "19H-20H", "20H-21H", "21H-22H",
+            "22H-23H", "23H-0H"
+        )
+        station_profil <- combined_profil |>
+            filter(as.numeric(jour) == as.numeric(input$year)) |>
+            filter(id_refa_lda %in% selected_station_ids) |>
+            mutate(trnc_horr_60 = factor(trnc_horr_60, levels = hourly_levels, ordered = TRUE))
+        if (nrow(station_profil) == 0) {
+            return(NULL)
+        }
+
+        day_type_descriptions <- paste(
+            "DIJFP: Sundays, public holidays, and bridge days",
+            "JOHV: Weekdays outside school holidays",
+            "JOVS: Weekdays during school holidays",
+            "SAHV: Saturdays outside school holidays",
+            "SAVS: Saturdays during school holidays",
+            sep = "\n"
+        )
+
+        ggplot(station_profil, aes(x = trnc_horr_60, y = pourc_validations, group = cat_jour, color = cat_jour)) +
             geom_line(size = 1) +
             geom_point(size = 3) +
+            scale_color_brewer(palette = "Set2") +
             labs(
-                title = "Hourly Validation Profiles by Day Type",
+                title = paste("Hourly Validation Profiles for:", selected_station, "(", input$year, ")", sep = " "),
+                caption = day_type_descriptions,
                 x = "Hourly Interval",
-                y = "Percentage of Daily Validations"
+                y = "Percentage of Daily Validations",
+                color = "Day Type"
             ) +
             theme_minimal() +
-            theme(axis.text.x = element_text(angle = 45, hjust = 1))
+            theme(
+                axis.text.x = element_text(angle = 45, hjust = 1),
+                legend.position = "bottom",
+                plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+                plot.caption = element_text(size = 10, hjust = 0, face = "italic")
+            )
     })
 }
 
