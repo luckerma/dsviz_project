@@ -23,6 +23,26 @@ read_data <- function(year) {
     colnames(nb_s1_df) <- tolower(colnames(nb_s1_df))
     colnames(profil_s1_df) <- tolower(colnames(profil_s1_df))
 
+    # TODO: Columns are not matching!!!
+    if (year == "2023") {
+        # 22: CODE_STIF_TRNS;CODE_STIF_RES;CODE_STIF_ARRET;LIBELLE_ARRET;ID_REFA_LDA;CAT_JOUR;TRNC_HORR_60;pourc_validations
+        # 23: CODE_STIF_TRNS;CODE_STIF_RES;CODE_STIF_LIGNE;LIBELLE_LIGNE;ID_GROUPOFLIGNE;CAT_JOUR;TRNC_HORR_60;pourc_validations
+
+        mapping <- c(
+            "CODE_STIF_TRNS" = "CODE_STIF_TRNS",
+            "CODE_STIF_RES" = "CODE_STIF_RES",
+            "CODE_STIF_ARRET" = "CODE_STIF_LIGNE",
+            "LIBELLE_ARRET" = "LIBELLE_LIGNE",
+            "ID_REFA_LDA" = "ID_GROUPOFLIGNE",
+            "CAT_JOUR" = "CAT_JOUR",
+            "TRNC_HORR_60" = "TRNC_HORR_60",
+            "pourc_validations" = "pourc_validations"
+        )
+        mapping <- setNames(tolower(names(mapping)), tolower(mapping))
+        profil_s1_df <- profil_s1_df |>
+            rename_with(~ mapping[.x], everything())
+    }
+
     # "jour" to date format
     if (year == "2023") {
         nb_s1_df$jour <- ymd(nb_s1_df$jour)
@@ -136,3 +156,4 @@ years <- c("2018", "2019", "2020", "2021", "2022", "2023")
 for (year in years) {
     export_data(read_clean_data(year), year)
 }
+print("Data cleaning and export done: /data/cleaned_data)")
