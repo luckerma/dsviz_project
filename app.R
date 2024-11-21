@@ -10,7 +10,7 @@ source("helper.R")
 ### DATA ###
 
 # Yearly Data
-years <- c("2018", "2019", "2020", "2021", "2022")
+years <- c("2018", "2019", "2020", "2021", "2022", "2023")
 # years <- c("2018")
 yearly_data <- lapply(years, function(year) load_data(year))
 combined_nb_vald <- bind_rows(lapply(yearly_data, `[[`, "nb_vald_df"))
