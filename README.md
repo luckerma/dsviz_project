@@ -1,5 +1,9 @@
 # Analyzing and Visualizing Ridership Patterns in Île-de-France Rail Network
 
+## Report
+
+https://luckerma.github.io/dsviz_project/
+
 ## Data Collection
 
 ### Yearly Data
@@ -49,7 +53,7 @@ library(shiny)
 shiny::runApp("./")
 ```
 
-http://127.0.0.1:<port>
+http://127.0.0.1:{port}
 
 #### Deploy on Remote Server
 
@@ -70,7 +74,7 @@ rsconnect::deployApp(
 
 https://luckerma.shinyapps.io/DSViz_Project/
 
-#### Export Static Server & Run
+#### Export Static Server & Run (Work in Progress)
 
 ```R
 library(shinylive)
@@ -78,9 +82,9 @@ library(httpuv)
 
 shinylive::export(
     appdir="./",
-    destdir="./shinylive/"
+    destdir="./docs/"
 )
-httpuv::runStaticServer("./shinylive/")
+httpuv::runStaticServer("./docs/")
 ```
 
-http://127.0.0.1:<port>
+http://127.0.0.1:{port}

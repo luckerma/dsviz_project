@@ -1,7 +1,7 @@
 library(dplyr)
 library(readr)
-library(lubridate)
 library(sf)
+library(lubridate)
 
 read_data <- function(year) {
     # Data paths

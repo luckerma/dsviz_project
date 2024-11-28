@@ -5,9 +5,7 @@ manuscript:
   article: index.qmd
 
 format:
-  html:
-    comments:
-      hypothesis: true
+  html: default
   pdf: default
 
 execute:

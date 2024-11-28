@@ -32,15 +32,13 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
 Imports:
-    shiny,
     dplyr,
     ggplot2,
+    leaflet,
     lubridate,
+    readr,
     rsconnect,
     sf,
-    readr,
-    tidyr,
-    leaflet,
-    shinylive,
-    httpuv
+    shiny,
+    tidyr
 Depends: R (>= 4.0.0)

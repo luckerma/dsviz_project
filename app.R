@@ -1,9 +1,9 @@
-library(shiny)
 library(dplyr)
 library(ggplot2)
-library(lubridate)
 library(leaflet)
+library(lubridate)
 library(sf)
+library(shiny)
 
 source("helper.R")
 
