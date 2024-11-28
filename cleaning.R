@@ -92,7 +92,8 @@ read_data <- function(year) {
 
     profil_s2_df <- profil_s2_df |>
         mutate(
-            pourc_validations = as.numeric(gsub(",", ".", pourc_validations))
+            pourc_validations = as.numeric(gsub(",", ".", pourc_validations)),
+            jour = year
         )
 
     nb_s2_df <- na.omit(nb_s2_df)
@@ -118,6 +119,7 @@ remove_outliers <- function(data) {
             data <- data[data[[col]] >= lower_bound & data[[col]] <= upper_bound, ]
         }
     }
+
     return(data)
 }
 
@@ -148,8 +150,8 @@ read_clean_data <- function(year) {
 }
 
 export_data <- function(data, year) {
-    write_csv(data$nb_vald, sprintf("data/cleaned_data/%s_nb_vald.csv", year))
-    write_csv(data$profil, sprintf("data/cleaned_data/%s_profil.csv", year))
+    saveRDS(data$nb_vald, sprintf("data/cleaned_data/%s_nb_vald.rds", year))
+    saveRDS(data$profil, sprintf("data/cleaned_data/%s_profil.rds", year))
 }
 
 years <- c("2018", "2019", "2020", "2021", "2022", "2023")

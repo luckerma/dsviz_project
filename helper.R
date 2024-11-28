@@ -5,21 +5,8 @@ library(sf)
 
 # Function to load and clean data
 load_data <- function(year) {
-    nb_vald_df <- read_delim(sprintf("data/cleaned_data/%s_nb_vald.csv", year), delim = ",", na = c("NA", "ND", "ND", "?"), locale = locale(decimal_mark = ","), col_types = cols(.default = col_character()))
-    nb_vald_df <- nb_vald_df |>
-        mutate(
-            jour = ymd(jour),
-            nb_vald = as.numeric(nb_vald)
-        ) |>
-        na.omit()
-
-    profil_df <- read_delim(sprintf("data/cleaned_data/%s_profil.csv", year), delim = ",", na = c("NA", "ND", "ND", "?"), locale = locale(decimal_mark = ","), col_types = cols(.default = col_character()))
-    profil_df <- profil_df |>
-        mutate(
-            pourc_validations = as.numeric(gsub(",", ".", pourc_validations)),
-            jour = year
-        ) |>
-        na.omit()
+    nb_vald_df <- readRDS(sprintf("data/cleaned_data/%s_nb_vald.rds", year))
+    profil_df <- readRDS(sprintf("data/cleaned_data/%s_profil.rds", year))
 
     return(list(nb_vald_df = nb_vald_df, profil_df = profil_df))
 }
