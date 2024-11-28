@@ -1,7 +1,7 @@
 library(dplyr)
 library(readr)
 library(lubridate)
-
+library(sf)
 
 read_data <- function(year) {
     # Data paths
@@ -154,8 +154,37 @@ export_data <- function(data, year) {
     saveRDS(data$profil, sprintf("data/cleaned_data/%s_profil.rds", year))
 }
 
-years <- c("2018", "2019", "2020", "2021", "2022", "2023")
-for (year in years) {
-    export_data(read_clean_data(year), year)
+load_spatial_data <- function() {
+    zones <- read_delim("data/zones.csv", delim = ";")
+    zones_spatial <- st_read("data/REF_ZdA/PL_ZDL_R_14_11_2024.shp", crs = 2154)
+
+    names(zones) <- tolower(names(zones))
+
+    zones_spatial <- zones_spatial |>
+        st_make_valid() |>
+        st_transform(4326) |>
+        mutate(idrefa_lda = as.character(idrefa_lda)) |>
+        full_join(zones, by = c("id_refa" = "zdaid"))
+
+    centroids <- st_centroid(zones_spatial)
+    zones_spatial$longitude <- st_coordinates(centroids)[, 1]
+    zones_spatial$latitude <- st_coordinates(centroids)[, 2]
+
+    return(zones_spatial)
 }
-print("Data cleaning and export done: /data/cleaned_data)")
+
+export_spatial_data <- function(data) {
+    saveRDS(data, "data/cleaned_data/zones_spatial.rds")
+}
+
+main <- function() {
+    years <- c("2018", "2019", "2020", "2021", "2022", "2023")
+    for (year in years) {
+        export_data(read_clean_data(year), year)
+    }
+
+    export_spatial_data(load_spatial_data())
+}
+
+main()
+print("Data cleaning and export done: '/data/cleaned_data'")

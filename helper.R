@@ -13,20 +13,7 @@ load_data <- function(year) {
 
 # Load spatial data
 load_spatial_data <- function() {
-    zones <- read_delim("data/zones.csv", delim = ";")
-    zones_spatial <- st_read("data/REF_ZdA/PL_ZDL_R_14_11_2024.shp", crs = 2154)
-
-    names(zones) <- tolower(names(zones))
-
-    zones_spatial <- zones_spatial |>
-        st_make_valid() |>
-        st_transform(4326) |>
-        mutate(idrefa_lda = as.character(idrefa_lda)) |>
-        full_join(zones, by = c("id_refa" = "zdaid"))
-
-    centroids <- st_centroid(zones_spatial)
-    zones_spatial$longitude <- st_coordinates(centroids)[, 1]
-    zones_spatial$latitude <- st_coordinates(centroids)[, 2]
+    zones_spatial <- readRDS("data/cleaned_data/zones_spatial.rds")
 
     return(zones_spatial)
 }

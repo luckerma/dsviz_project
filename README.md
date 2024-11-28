@@ -27,44 +27,60 @@ Spatial Data: https://eu.ftp.opendatasoft.com/stif/Reflex/REF_ZdA.zip
 
 ## R
 
-```R
-install.packages(c("dplyr", "readr", "lubridate", "shiny", "sf", "rsconnect", "leaflet"))
-```
+### Required Packages
 
 ```R
-R -e 'source("cleaning.R")'
+install.packages(c("dplyr", "readr", "lubridate", "shiny", "sf", "rsconnect", "leaflet", "shinylive", "httpuv"))
 ```
 
+### Data Cleaning
+
 ```R
-R -e 'source("eda.R")'
+source("cleaning.R")
 ```
 
 ### Shiny
 
-#### Local Server
+#### Run Local Server
 
 ```R
 library(shiny)
+
 shiny::runApp("./")
 ```
 
 http://127.0.0.1:<port>
 
-#### Remote Server
+#### Deploy on Remote Server
 
 ```R
 library(rsconnect)
-rsconnect::deployApp(appDir="./",
+
+rsconnect::deployApp(
+    appDir="./",
     appName="DSViz_Project",
     forceUpdate=TRUE,
     appFiles=c(
         "app.R",
         "helper.R",
-        list.files("data/cleaned_data/", full.names=TRUE, recursive=TRUE),
-        list.files("data/REF_ZdA/", full.names=TRUE, recursive=TRUE),
-        "data/zones.csv"
+        list.files("data/cleaned_data", full.names=TRUE, recursive=TRUE)
     )
 )
 ```
 
 https://luckerma.shinyapps.io/DSViz_Project/
+
+#### Export Static Server & Run
+
+```R
+library(shinylive)
+library(httpuv)
+
+shinylive::export(
+    appdir="./",
+    destdir="./shinylive/"
+)
+httpuv::runStaticServer("./shinylive/")
+```
+
+http://127.0.0.1:<port>

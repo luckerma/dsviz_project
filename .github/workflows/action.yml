@@ -4,12 +4,15 @@ on:
   push:
     branches:
       - main
-      - 4-dashboard-development-using-shiny
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout code
@@ -31,4 +34,17 @@ jobs:
       - name: Deploy Shiny App
         run: |
           R -e 'rsconnect::setAccountInfo(name="${{ secrets.SHINYAPPS_USER }}", token="${{ secrets.SHINYAPPS_TOKEN }}", secret="${{ secrets.SHINYAPPS_SECRET }}")'
-          R -e 'rsconnect::deployApp("./", appName="DSViz_Project", forceUpdate=TRUE, appFiles=c("app.R", "helper.R", list.files("data/cleaned_data/", full.names=TRUE, recursive=TRUE), list.files("data/REF_ZdA/", full.names=TRUE, recursive=TRUE), "data/zones.csv"))'
+          R -e 'rsconnect::deployApp("./", appName="DSViz_Project", forceUpdate=TRUE, appFiles=c("app.R", "helper.R", list.files("data/cleaned_data", full.names=TRUE, recursive=TRUE)))'
+
+      - name: Convert to Shinylive
+        run: |
+          mkdir 'shinylive'
+          R -e 'shinylive::export(appdir="./", destdir="./shinylive/")'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.PA_TOKEN }}
+          branch: gh-pages
+          folder: shinylive

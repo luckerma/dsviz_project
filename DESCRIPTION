@@ -2,8 +2,9 @@ Package: DSVizProject
 Type: Package
 Title: Data Science and Visualization Project
 Version: 0.1.0
-Authors@R: 
-    c(  person(given = "Luca",
+Authors@R:
+    c(
+        person(given = "Luca",
             family = "Uckermann",
             role = c("aut", "cre"),
             email = "l.uckermann@web.de"),
@@ -22,7 +23,8 @@ Authors@R:
         person(given = "Francky",
             family = "",
             role = "aut",
-            email = ""))
+            email = "")
+    )
 Maintainer: Luca <l.uckermann@web.de>
 Description: Data Science and Visualization Project (IDF data)
 License: MIT
@@ -38,5 +40,7 @@ Imports:
     sf,
     readr,
     tidyr,
-    leaflet
+    leaflet,
+    shinylive,
+    httpuv
 Depends: R (>= 4.0.0)
