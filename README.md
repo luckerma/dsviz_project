@@ -4,6 +4,10 @@
 
 https://luckerma.github.io/dsviz_project/
 
+## Shiny App
+
+https://luckerma.shinyapps.io/DSViz_Project/
+
 ## Data Collection
 
 ### Yearly Data
@@ -27,6 +31,7 @@ Validations: https://data.iledefrance-mobilites.fr/explore/dataset/histo-validat
 ### Zones & Spatial Data
 
 Zones: https://data.iledefrance-mobilites.fr/explore/dataset/zones-d-arrets/information/
+
 Spatial Data: https://eu.ftp.opendatasoft.com/stif/Reflex/REF_ZdA.zip
 
 ## R
@@ -34,7 +39,7 @@ Spatial Data: https://eu.ftp.opendatasoft.com/stif/Reflex/REF_ZdA.zip
 ### Required Packages
 
 ```R
-install.packages(c("dplyr", "readr", "lubridate", "shiny", "sf", "rsconnect", "leaflet", "shinylive", "httpuv"))
+install.packages(c("dplyr", "forecast", "ggplot2", "leaflet", "lubridate", "readr", "rsconnect", "sf", "shiny", "tidyr"))
 ```
 
 ### Data Cleaning
@@ -74,7 +79,7 @@ rsconnect::deployApp(
 
 https://luckerma.shinyapps.io/DSViz_Project/
 
-#### Export Static Server & Run (Work in Progress)
+#### Export Static Server & Run (Work in Progress: Not working)
 
 ```R
 library(shinylive)

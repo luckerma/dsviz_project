@@ -1,4 +1,5 @@
 library(dplyr)
+library(forecast)
 library(ggplot2)
 library(leaflet)
 library(lubridate)
@@ -41,6 +42,10 @@ ui <- fluidPage(
                 sliderInput("min_vald", "Minimum Validations:", min = min(yearly_nb_vald$nb_vald), max = max(yearly_nb_vald$nb_vald), value = mean(yearly_nb_vald$nb_vald), step = max(yearly_nb_vald$nb_vald) / 100),
                 selectInput("station", "Select Station:", choices = unique(combined_nb_vald$libelle_arret), selected = "NOISY-CHAMPS"),
                 selectInput("year", "Select Year:", choices = years)
+            ),
+            conditionalPanel(
+                condition = "input.tabs == 'Forecasting'",
+                sliderInput("forecast_days", "Number of Days to Forecast:", min = 1, max = 184, value = 184)
             )
         ),
         mainPanel(
@@ -77,6 +82,13 @@ ui <- fluidPage(
                         column(12, verbatimTextOutput("stationStats")),
                         column(12, plotOutput("profilHourlyPlot")),
                         column(12, plotOutput("profilDayTypePlot"))
+                    )
+                ),
+                tabPanel(
+                    "Forecasting",
+                    fluidRow(
+                        column(12, plotOutput("forecastPlot")),
+                        column(12, verbatimTextOutput("forecastStats"))
                     )
                 )
             )
@@ -419,6 +431,38 @@ server <- function(input, output, session) {
                 plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
                 plot.caption = element_text(size = 10, hjust = 0, face = "italic")
             )
+    })
+
+    # Forecasting
+    forecast_result <- reactive({
+        forecast_days <- input$forecast_days
+
+        historical_data <- combined_nb_vald |>
+            group_by(jour) |>
+            summarise(total_validations = sum(nb_vald, na.rm = TRUE), .groups = "drop")
+
+        ts_data <- ts(historical_data$total_validations, frequency = 365, start = c(2018, 1))
+        forecast_result <- stlf(ts_data, h = forecast_days)
+    })
+
+    # Forecasting Plot
+    output$forecastPlot <- renderPlot({
+        forecast_result <- forecast_result()
+
+        autoplot(forecast_result) +
+            labs(
+                title = "Total Validations for 2023 S2 (Forecast)",
+                x = "Days",
+                y = "Total Validations"
+            ) +
+            theme_minimal()
+    })
+
+    # Forecast Stats
+    output$forecastStats <- renderPrint({
+        forecast_result <- forecast_result()
+
+        summary(forecast_result)
     })
 }
 

@@ -33,6 +33,7 @@ LazyData: true
 RoxygenNote: 7.2.3
 Imports:
     dplyr,
+    forecast,
     ggplot2,
     leaflet,
     lubridate,
