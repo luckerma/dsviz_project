@@ -22,7 +22,7 @@ https://luckerma.shinyapps.io/DSViz_Project/
 
 2022: https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/histo-validations-reseau-ferre/files/2a6afefb59a0ccd657ba46962c96d90b
 
-2023: https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/validations-reseau-ferre-nombre-validations-par-jour-1er-semestre/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B
+2023: https://data.iledefrance-mobilites.fr/explore/dataset/validations-reseau-ferre-profils-horaires-par-jour-type-1er-semestre/information/
 
 ### Validations
 
