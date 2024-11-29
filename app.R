@@ -11,11 +11,9 @@ source("helper.R")
 ### DATA ###
 
 # Yearly Data
-years <- c("2018", "2019", "2020", "2021", "2022", "2023")
-# years <- c("2018")
-yearly_data <- lapply(years, function(year) load_data(year))
-combined_nb_vald <- bind_rows(lapply(yearly_data, `[[`, "nb_vald_df"))
-combined_profil <- bind_rows(lapply(yearly_data, `[[`, "profil_df"))
+combined_data <- load_combined_data()
+combined_nb_vald <- combined_data$combined_nb_vald
+combined_profil <- combined_data$combined_profil
 
 # Spatial Data
 zones_spatial <- load_spatial_data()
@@ -41,7 +39,7 @@ ui <- fluidPage(
                 condition = "input.tabs == 'Stations Map'",
                 sliderInput("min_vald", "Minimum Validations:", min = min(yearly_nb_vald$nb_vald), max = max(yearly_nb_vald$nb_vald), value = mean(yearly_nb_vald$nb_vald), step = max(yearly_nb_vald$nb_vald) / 100),
                 selectInput("station", "Select Station:", choices = unique(combined_nb_vald$libelle_arret), selected = "NOISY-CHAMPS"),
-                selectInput("year", "Select Year:", choices = years)
+                selectInput("year", "Select Year:", choices = unique(yearly_nb_vald$year), selected = 2022)
             ),
             conditionalPanel(
                 condition = "input.tabs == 'Forecasting'",
@@ -190,9 +188,9 @@ server <- function(input, output, session) {
 
     # Comparison Days Plot
     output$comparisonDaysPlot <- renderPlot({
-        data <- comparison_data()
+        comparison_data <- comparison_data()
 
-        daily_trend <- data |>
+        daily_trend <- comparison_data |>
             group_by(relative_day, period, original_date = jour) |>
             summarize(avg_vald = mean(nb_vald, na.rm = TRUE), .groups = "drop")
 
@@ -293,8 +291,8 @@ server <- function(input, output, session) {
             summarise(total_validations = sum(nb_vald, na.rm = TRUE), .groups = "drop")
 
         filtered_zones_spatial <- zones_spatial |>
-            filter(idrefa_lda %in% filtered_stations()$id_refa_lda) |>
-            left_join(yearly_validations, by = c("idrefa_lda" = "id_refa_lda")) |>
+            filter(id_refa_lda %in% filtered_stations()$id_refa_lda) |>
+            left_join(yearly_validations, by = c("id_refa_lda" = "id_refa_lda")) |>
             mutate(
                 scaled_size = ifelse(is.na(total_validations), 5, total_validations / max(total_validations, na.rm = TRUE) * 20)
             )
@@ -304,9 +302,9 @@ server <- function(input, output, session) {
             addCircleMarkers(
                 lng = ~longitude,
                 lat = ~latitude,
-                popup = ~ paste("Station:", nom_lda),
-                layerId = ~idrefa_lda,
-                color = ~ ifelse(idrefa_lda %in% selected_station_ids, "green", "red"),
+                popup = ~ paste("Station: ", nom_lda),
+                layerId = ~id_refa_lda,
+                color = ~ ifelse(id_refa_lda %in% selected_station_ids, "green", "red"),
                 radius = ~scaled_size
             )
     })

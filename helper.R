@@ -4,11 +4,11 @@ library(readr)
 library(sf)
 
 # Function to load and clean data
-load_data <- function(year) {
-    nb_vald_df <- readRDS(sprintf("data/cleaned_data/%s_nb_vald.rds", year))
-    profil_df <- readRDS(sprintf("data/cleaned_data/%s_profil.rds", year))
+load_combined_data <- function() {
+    combined_nb_vald <- readRDS("data/cleaned_data/combined_nb_vald.rds")
+    combined_profil <- readRDS("data/cleaned_data/combined_profil.rds")
 
-    return(list(nb_vald_df = nb_vald_df, profil_df = profil_df))
+    return(list(combined_nb_vald = combined_nb_vald, combined_profil = combined_profil))
 }
 
 # Load spatial data

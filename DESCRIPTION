@@ -41,5 +41,5 @@ Imports:
     rsconnect,
     sf,
     shiny,
-    tidyr
+    stringr
 Depends: R (>= 4.0.0)
