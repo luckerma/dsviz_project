@@ -6,7 +6,7 @@ manuscript:
 
 format:
   html: default
-  pdf: default
+  #pdf: default
 
 execute:
-  freeze: true
+  freeze: false

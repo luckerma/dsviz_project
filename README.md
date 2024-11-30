@@ -39,6 +39,9 @@ install.packages(c("dplyr", "forecast", "ggplot2", "leaflet", "lubridate", "read
 ### Data Cleaning
 
 ```R
+YEARS <- c("2018", "2019", "2020", "2021", "2022", "2023")
+BASE_PATH <- "."
+
 source("cleaning.R")
 ```
 
@@ -72,3 +75,9 @@ rsconnect::deployApp(
 ```
 
 https://{username}.shinyapps.io/DSViz_Project/
+
+## Quarto
+
+```bash
+quarto preview ./report/
+```

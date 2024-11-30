@@ -4,12 +4,12 @@ library(sf)
 library(stringr)
 library(lubridate)
 
-read_data <- function(year) {
+read_data <- function(year, base_path = ".") {
     # Data paths
-    nb_s1 <- sprintf("data/data-rf-%s/%s_S1_NB_FER.txt", year, year)
-    profil_s1 <- sprintf("data/data-rf-%s/%s_S1_PROFIL_FER.txt", year, year)
-    nb_s2 <- sprintf("data/data-rf-%s/%s_S2_NB_FER.txt", year, year)
-    profil_s2 <- sprintf("data/data-rf-%s/%s_S2_Profil_FER.txt", year, year)
+    nb_s1 <- sprintf("%s/data/data-rf-%s/%s_S1_NB_FER.txt", base_path, year, year)
+    profil_s1 <- sprintf("%s/data/data-rf-%s/%s_S1_PROFIL_FER.txt", base_path, year, year)
+    nb_s2 <- sprintf("%s/data/data-rf-%s/%s_S2_NB_FER.txt", base_path, year, year)
+    profil_s2 <- sprintf("%s/data/data-rf-%s/%s_S2_Profil_FER.txt", base_path, year, year)
 
     if (!file.exists(nb_s1) || !file.exists(profil_s1)) {
         stop("Data files not found for year ", year)
@@ -139,18 +139,19 @@ remove_outliers <- function(data) {
     return(data)
 }
 
-read_clean_data <- function(years) {
+read_clean_data <- function(years, base_path) {
     combined_nb_vald <- list()
     combined_profil <- list()
 
     for (year in years) {
-        data <- read_data(year)
+        data <- read_data(year, base_path)
 
         original_nb_vald_rows <- nrow(data$nb_vald)
         original_profil_rows <- nrow(data$profil)
 
-        data$nb_vald <- remove_outliers(data$nb_vald)
-        data$profil <- remove_outliers(data$profil)
+        # TODO: Fix outlier removal, it's removing too many rows (gare and defense)
+        # data$nb_vald <- remove_outliers(data$nb_vald)
+        # data$profil <- remove_outliers(data$profil)
 
         combined_nb_vald[[year]] <- data$nb_vald
         combined_profil[[year]] <- data$profil
@@ -168,9 +169,11 @@ read_clean_data <- function(years) {
     return(list(nb_vald = combined_nb_vald, profil = combined_profil))
 }
 
-read_spatial_data <- function() {
-    zones <- read_delim("data/zones.csv", delim = ";")
-    zones_spatial <- st_read("data/REF_ZdA/PL_ZDL_R_14_11_2024.shp", crs = 2154)
+read_spatial_data <- function(base_path = ".") {
+    path <- sprintf("%s/data/zones.csv", base_path)
+    zones <- read_delim(path, delim = ";")
+    path <- sprintf("%s/data/REF_ZdA/PL_ZDL_R_14_11_2024.shp", base_path)
+    zones_spatial <- st_read(path, crs = 2154)
 
     names(zones) <- tolower(names(zones))
 
@@ -193,19 +196,23 @@ read_spatial_data <- function() {
     return(zones_spatial)
 }
 
-export_data <- function(combined_data) {
-    saveRDS(combined_data$nb_vald, "data/cleaned_data/combined_nb_vald.rds")
-    saveRDS(combined_data$profil, "data/cleaned_data/combined_profil.rds")
+export_data <- function(combined_data, base_path = ".") {
+    export_path <- sprintf("%s/data/cleaned_data/combined_nb_vald.rds", base_path)
+    saveRDS(combined_data$nb_vald, export_path)
+
+    export_path <- sprintf("%s/data/cleaned_data/combined_profil.rds", base_path)
+    saveRDS(combined_data$profil, export_path)
 }
 
-export_spatial_data <- function(spatial_data) {
-    saveRDS(spatial_data, "data/cleaned_data/zones_spatial.rds")
+export_spatial_data <- function(spatial_data, base_path = ".") {
+    export_path <- sprintf("%s/data/cleaned_data/zones_spatial.rds", base_path)
+    saveRDS(spatial_data, export_path)
 }
 
-main <- function(years) {
-    export_data(read_clean_data(years))
-    export_spatial_data(read_spatial_data())
+main <- function(years, base_path) {
+    export_data(read_clean_data(years, base_path), base_path)
+    export_spatial_data(read_spatial_data(base_path), base_path)
 }
 
-main(c("2018", "2019", "2020", "2021", "2022", "2023"))
+main(YEARS, BASE_PATH)
 message("Data cleaning and export done: '/data/cleaned_data'")
