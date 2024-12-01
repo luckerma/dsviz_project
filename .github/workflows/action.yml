@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pages: write
+
 jobs:
   deploy-shiny:
     runs-on: ubuntu-latest
@@ -43,33 +47,10 @@ jobs:
           rsconnect::deployApp("./", appName="DSViz_Project", forceUpdate=TRUE, appFiles=c("app.R", "helper.R", list.files("data/cleaned_data", full.names=TRUE, recursive=TRUE)))
           '
 
-  deploy-quarto:
-    runs-on: ubuntu-latest
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.2
-
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
           tinytex: true
-
-      - name: Install R
-        uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: "4.4.1"
-
-      - name: Install terra dependencies (https://github.com/rspatial/terra)
-        run: |
-          sudo apt-get -y update && sudo apt-get install -y  libudunits2-dev libgdal-dev libgeos-dev libproj-dev
-
-      - name: Install R Dependencies (renv)
-        uses: r-lib/actions/setup-renv@v2
 
       - name: Render and Publish
         id: github-pages
@@ -78,4 +59,4 @@ jobs:
           target: gh-pages
           path: report
         env:
-          GITHUB_TOKEN: ${{ secrets.PA_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
