@@ -33,7 +33,7 @@ Spatial Data: https://eu.ftp.opendatasoft.com/stif/Reflex/REF_ZdA.zip
 ### Required Packages
 
 ```R
-install.packages(c("dplyr", "forecast", "ggplot2", "leaflet", "lubridate", "readr", "rsconnect", "sf", "shiny", "stringr"))
+renv::restore()
 ```
 
 ### Data Cleaning
