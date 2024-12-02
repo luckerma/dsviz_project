@@ -1013,6 +1013,8 @@ The implementations used in this section reflect the logic used in the real depl
 The data cleaning process for ridership and profile data is performed for the years 2018-2023. The cleaning process focuses on handling missing values, removing outliers, and standardizing the dataset:
 
 ```{r}
+#| message: true
+
 YEARS <- c("2018", "2019", "2020", "2021", "2022", "2023")
 BASE_PATH <- ".."
 
