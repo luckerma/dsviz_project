@@ -20,11 +20,12 @@ authors:
     affiliation:
       - ref: UGE
     corresponding: true
-  - name: "Cong Son"
+  - name: "Cong Son DUONG"
     affiliation:
       - id: CSU
-        name: "Cong Son's University"
+        name: "Gustave Eiffel University"
     corresponding: true
+    orcid: "0000-0003-1823-8992"
   - name: "Francky"
     affiliation:
       - id: FRU
