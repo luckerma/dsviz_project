@@ -22,8 +22,7 @@ authors:
     corresponding: true
   - name: "Cong Son DUONG"
     affiliation:
-      - id: CSU
-        name: "Gustave Eiffel University"
+      - ref: UGE
     corresponding: true
     orcid: "0000-0003-1823-8992"
   - name: "Francky"
