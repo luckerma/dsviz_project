@@ -83,5 +83,5 @@ quarto preview ./report/
 ```
 
 ```bash
-quarto render ./report/ --to pdf
+quarto render ./report/ --to html
 ```
