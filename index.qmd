@@ -45,31 +45,31 @@ execute:
   include: true
 
 abstract: |
-  This project analyzes public transport ridership trends in Île-de-France from 2018 to 2023. Using a Shiny-based interactive application, it explores temporal and spatial ridership patterns, predicts future trends, and evaluates the impact of holidays and school vacations.
+  This project analyzes public transport ridership trends in Île-de-France from 2018 to 2023. Using a Shiny-based interactive application, it explores temporal and spatial ridership patterns, predicts future trends and evaluates the impact of holidays and school vacations.
 ---
 
 # Introduction
 
 ## Background
-The objective of this project is to analyze and visualize public transport ridership data in the Île-de-France (IDF) region from 2018 to 2023. By examining the temporal and spatial patterns of ridership, the aim is to provide insights into the use of public transport services, identify trends, and forecast future ridership patterns.
+The objective of this project is to analyze and visualize public transport ridership data in the Île-de-France (IDF) region from 2018 to 2023. By examining the temporal and spatial patterns of ridership, the aim is to provide insights into the use of public transport services, identify trends and forecast future ridership patterns.
 
-Île-de-France Mobilités (IdFM) (formerly STIF) [@idf2024] is the public transport authority that coordinates and organizes public transport in the IDF region. Understanding ridership trends is essential for planning and optimizing public transport services to meet the needs of the population. IdFM collects ridership data, including daily validations for public transport, hourly percentage distribution of ridership by day type, and mapping information for stations. All this data is publicly available on their "Plateforme Régionale d'Information pour la Mobilité" (PRIM) platform [@idf_prim2024].
+Île-de-France Mobilités (IdFM) (formerly STIF) [@idf2024] is the public transport authority that coordinates and organizes public transport in the IDF region. Understanding ridership trends is essential for planning and optimizing public transport services to meet the needs of the population. IdFM collects ridership data, including daily validations for public transport, hourly percentage distribution of ridership by day type and mapping information for stations. All of this data is publicly available on their "Plateforme Régionale d'Information pour la Mobilité" (PRIM) platform [@idf_prim2024].
 
-A beneficial side-effect of this project is to get to know the R programming language and its capabilities for data analysis and visualization. Furthermore, popular packages for data manipulation, visualization and interactive web applications will be used in this project.
+A beneficial side-effect of this project is to get to know the R programming language and its capabilities for data analysis and visualization. In addition, popular packages for data manipulation, visualization and interactive web applications will be used in this project.
 
 ## Objectives
 The project was guided by the following objectives
 
 - Collect and clean ridership data from the IDF region.
 - Investigate temporal and spatial trends in ridership patterns.
-- Compare ridership during holidays and school vacations to normal periods.
+- Compare ridership during holidays and school vacations with normal periods.
 - Develop and deploy an interactive web dashboard to visualize ridership data.
 - Apply statistical methods to validate findings and derive insights.
 
 # Data Collection and Preparation
 
 ## Data Collection
-The data used in this project are publicly available on the PRIM platform of the IdFM. All datasets have been downloaded and pushed to the project's GitHub repository [@dsviz_project_github2024] for further data cleaning and analysis. The datasets used in this project include:
+The data used in this project is publicly available on the PRIM platform of the IdFM. All datasets have been downloaded and pushed to the project's GitHub repository [@dsviz_project_github2024] for further data cleaning and analysis. The datasets used in this project include:
 
 ### Number of validations per day (nb_fer):
 
@@ -153,13 +153,13 @@ The data used in this project are publicly available on the PRIM platform of the
 
 ## **Data Preparation**
 
-The reproducible data cleaning process is performed using the R script (`cleaning.R`). The script involves several sequential steps to prepare the raw ridership data for analysis. Below are the key steps and the corresponding actions taken:
+The reproducible data cleaning process is performed using the R script (`cleaning.R`). The script includes several sequential steps to prepare the raw ridership data for analysis. The main steps and the corresponding R code are outlined below:
 
-### 1. Data Loading
+### Data Loading
 
 The **Data Loading** process is the first step in preparing the ridership data for analysis. This code dynamically constructs file paths for the ridership (`NB_FER`) and profile (`PROFIL_FER`) datasets, providing flexibility in handling data for different years and formats.
 
-In general, the datasets for each year are split into two semesters (`S1` and `S2`), with corresponding files for the number of validations (`NB_FER`) and hourly profiles (`PROFIL_FER`). To keep the report concise, the following cleaning process is demonstrated only for the first semester data (`S1`), but the same steps are applied to the second semester data (`S2`).
+In general, the datasets for each year are divided into two semesters (`S1` and `S2`), with corresponding files for the number of validations (`NB_FER`) and hourly profiles (`PROFIL_FER`). To keep the report concise, the following cleaning process is demonstrated only for the first semester data (`S1`), but the same steps are applied to the second semester data (`S2`).
 
 ```r
 nb_s1 <- sprintf("data/data-rf-%s/%s_S1_NB_FER.txt", year, year)
@@ -170,15 +170,15 @@ nb_s1_df <- read_delim(nb_s1, delim = delim, col_types = cols(.default = col_cha
 profil_s1_df <- read_delim(profil_s1, delim = delim, col_types = cols(.default = col_character()), guess_max = 10000, locale = locale(decimal_mark = ","))
 ```
 
-Here the `sprintf()` function is used to construct file paths for the ridership and profile records based on the selected year. The `read_delim()` function from the `readr` package [@readr2024] is then used to read the data from the text files.
+Here, the `sprintf()` function is used to construct file paths for the ridership and profile records based on the selected year. The `read_delim()` function from the `readr` package [@readr2024] is then used to read the data from the text files.
 
-Only for the year 2023, the delimiter is set to `;` instead of the default `tab` delimiter due to differences in data format. The `locale` parameter is used to set the decimal separator to `,` for correct numeric parsing.
+Only for 2023, the delimiter is set to `;` instead of the default `tab` delimiter due to differences in data format. The `locale` parameter is used to set the decimal separator to `,` for proper numeric parsing.
 
 This **Data Loading** step ensures that the raw data is successfully loaded and ready for preprocessing and analysis. It provides a solid foundation for subsequent data manipulation and cleaning steps.
 
-### 2. Data Manipulation
+### Data Manipulation
 
-The **Data Manipulation** step ensures that the loaded data is consistent, standardized, and ready for further processing. This includes renaming columns for clarity, converting date and numeric formats, and applying transformations to align the data structure.
+The **Data Manipulation** step ensures that the loaded data is consistent, standardized and ready for further processing. This includes renaming columns for clarity, converting date and numeric formats and applying transformations to align the data structure.
 
 ```r
 colnames(nb_s1_df) <- tolower(colnames(nb_s1_df))
@@ -200,7 +200,7 @@ if (year == "2023") {
 }
 ```
 
-The date column (`jour`) is converted to a proper date type for consistency in downstream analysis. Depending on the year of the dataset, either `ymd()` (year-month-day) or `dmy()` (day-month-year) from the `lubridate` package [@lubridate2011] is used to parse the date correctly.
+The date column (`jour`) is converted to the correct date type for consistency in downstream analysis. Depending on the year of the dataset, either `ymd()` (year-month-day) or `dmy()` (day-month-year) from the `lubridate` package [@lubridate2011] is used to parse the date correctly.
 
 ```r
 nb_s1_df <- nb_s1_df |>
@@ -212,11 +212,11 @@ profil_s1_df <- profil_s1_df |>
     )
 ```
 
-The numeric columns `nb_vald` and `pourc_validations` are converted to numeric formats. The `pourc_validations` column requires an additional transformation to replace commas with dots for correct parsing. The `jour` column in the profile data is assigned the value of the year to allow identification of the origin of the data even after the following data aggregation.
+The numeric columns `nb_vald` and `pourc_validations` are converted to numeric formats. The `pourc_validations` column requires an additional transformation to replace commas with periods for correct parsing. The `jour` column in the profile data is assigned the value of the year to allow identification of the origin of the data even after the subsequent data aggregation.
 
-### 3. Data Cleaning
+### Data Cleaning
 
-The **Data Cleaning** step ensures that the datasets are free of missing values and inconsistencies. This process involves removing any rows with missing values and consolidating the data to a structured format for analysis.
+The **Data Cleaning** step ensures that the datasets are free of missing values and inconsistencies. This process removes all rows with missing values and consolidates the data into a structured format for analysis.
 
 ```r
 nb_s1_df <- na.omit(nb_s1_df)
@@ -239,9 +239,9 @@ profil_s1_df <- profil_s1_df |>
     summarise(pourc_validations = mean(pourc_validations, na.rm = TRUE), .groups = "drop")
 ```
 
-For consistency, the column `libelle_arret` (station name) is cleaned by converting all station names to uppercase with `toupper()` and removing leading and trailing spaces with `str_trim()` from the `stringr` package [@stringr2023]. The data is then grouped by key identifiers and relevant attributes to consolidate the information. For `nb_s1_df` the records are grouped by `jour`, `id_refa_lda` and `libelle_arret` and the total number of validations (`nb_vald`) is calculated for each group. Similarly, for `profil_s1_df`, records are grouped by `jour`, `id_refa_lda`, `libelle_arret`, `cat_jour` (day category), and `trnc_horr_60` (hour interval), and the average percentage of validations (`pourc_validations`) is calculated for each group. This reduces the data to a minimal and structured format for further analysis.
+For consistency, the `libelle_arret` (station name) column is cleaned by converting all station names to uppercase with `toupper()` and removing leading and trailing spaces with `str_trim()` from the `stringr` package [@stringr2023]. The data is then grouped by key identifiers and relevant attributes to consolidate the information. For `nb_s1_df` the records are grouped by `jour`, `id_refa_lda` and `libelle_arret` and the total number of validations (`nb_vald`) is calculated for each group. Similarly, for `profil_s1_df`, the records are grouped by `jour`, `id_refa_lda`, `libelle_arret`, `cat_jour` (day category) and `trnc_horr_60` (hour interval) and the average percentage of validations (`pourc_validations`) is calculated for each group. This reduces the data to a minimal and structured format for further analysis.
 
-### 4. Outlier Detection
+### Outlier Detection
 
 The **Outlier Detection** step ensures that extreme values in the dataset, which may skew the analysis or represent data entry errors, are systematically identified and removed. This is achieved using an interquartile range (IQR)-based approach applied to all numeric columns in the dataset.
 
@@ -263,16 +263,16 @@ remove_outliers <- function(data) {
 }
 ```
 
-The `remove_outliers()` function iterates through each numeric column in the dataset and calculates the first quartile (Q1) and the third quartile (Q3) for that column. The interquartile range (IQR) is then calculated as the difference between Q3 and Q1. The IQR is used to define lower and upper bounds to identify outliers:
+The `remove_outliers()` function iterates over each numeric column in the dataset and calculates the first quartile (Q1) and the third quartile (Q3) for that column. It then calculates the interquartile range (IQR) as the difference between Q3 and Q1. The IQR is used to define lower and upper bounds to identify outliers:
 
 - **Lower Bound**: `Q1 - 1.5 * IQR`
 - **Upper Bound**: `Q3 + 1.5 * IQR`
 
 Rows with numeric values outside these bounds are filtered out, effectively removing outliers (see @tbl-data_cleaning_summary).
 
-### 5. Spatial Data Integration
+### Spatial Data Integration
 
-The **Spatial Data Integration** step combines the zone data with geospatial data to provide insight into station-level patterns and to enable spatial visualizations. This process involves loading, transforming, and merging geospatial information with related zone data.
+The **Spatial Data Integration** step combines the zone data with geospatial data to provide insight into station-level patterns and enable spatial visualizations. This process involves loading, transforming and merging geospatial information with related zone data.
 
 ```r
 read_spatial_data <- function() {
@@ -301,22 +301,22 @@ read_spatial_data <- function() {
 }
 ```
 
-Spatial data integration begins by loading two data sources:
+Spatial data integration begins with loading two data sources:
 
-1. **Station Data** (`zones.csv`): A CSV file containing station information.
+1. **Station Data** (`zones.csv`): A CSV file that contains station information.
 2. **Geospatial Data** (`PL_ZDL_R_14_11_2024.shp`): A shapefile representing the geographic boundaries of the stations. This data is read using the `st_read()` function from the `sf` package [@sf2018;@sf2023], with the coordinate reference system (CRS) specified as EPSG:2154 [@epsg_lambert2024].
 
 Several transformations and merges are performed to ensure compatibility of the spatial data. First, the `st_make_valid()` function is applied to the shapefile data to ensure that all geometries are valid before further processing. The coordinate reference system (CRS) is then transformed to WGS84 (EPSG:4326) [@epsg_world2024], which is widely used for web-based visualization tools such as `leaflet` [@leaflet2024]. After these transformations, the shapefile data are merged with the station data (`zones`) using the `full_join()` function. The merge is based on matching the `id_refa` column from the shapefile with the `zdaid` column in the CSV file.
 
-To represent stations as points, the centroids of the polygons in the shapefile are calculated using the `st_centroid()` function. The latitude and longitude of each centroid is extracted and added as a new column to the spatial data, allowing for accurate point-based visualizations.
+To represent the stations as points, the centroids of the polygons in the shapefile are calculated using the `st_centroid()` function. The latitude and longitude of each centroid is extracted and added to the spatial data as a new column, allowing for accurate point-based visualizations.
 
-The processed spatial data undergoes additional cleaning to make it more streamlined for analysis and visualization. Geometries are dropped using the `st_drop_geometry()` function as they are no longer needed for point-based visualizations. Column names are standardized and station names (`nom_lda`) are converted to uppercase and truncated to ensure consistency with the `nb_vald` and `profil` datasets. Finally, the dataset is filtered to keep only the relevant columns: `id_refa_lda`, `nom_lda`, `longitude` and `latitude`.
+The processed spatial data undergoes additional cleaning to make it more streamlined for analysis and visualization. Geometries are dropped using the `st_drop_geometry()` function as they are no longer needed for point-based visualizations. Column names are standardized and station names (`nom_lda`) are converted to uppercase and truncated to ensure consistency with the `nb_vald` and `profil` datasets. Finally, the dataset is filtered to retain only the relevant columns: `id_refa_lda`, `nom_lda`, `longitude` and `latitude`.
 
-The resulting dataset includes station identifiers, names, and geographic coordinates (latitude and longitude). This integrated spatial data is essential for mapping and visualizing ridership patterns at the station level, providing the basis for meaningful geospatial analysis. It also removes unnecessary geometries to reduce the size of the dataset and improve processing efficiency, especially when developing and deploying the web application later (see @sec-dashboard-development-deployment).
+The resulting dataset contains station identifiers, names and geographic coordinates (latitude and longitude). This integrated spatial data is essential for mapping and visualizing ridership patterns at the station level, providing the basis for meaningful geospatial analysis. It also removes unnecessary geometry to reduce the size of the dataset and improve processing efficiency, especially when developing and deploying the web application later (see @sec-dashboard-development-deployment).
 
-### 6. Data Export
+### Data Export
 
-The **Data Export** step ensures that the cleaned and processed datasets are saved in an efficient format for future use. The ridership data (`nb_vald` and `profil`) and the spatial data (`zones_spatial`) are saved as RDS files [@rds2024] in the `data/cleaned_data/` directory. These RDS files are compact, fast to read, and preserve the structure of R objects, making them ideal for downstream analysis.
+The **Data Export** step ensures that the cleaned and processed datasets are saved in an efficient format for future use. The ridership data (`nb_vald` and `profil`) and the spatial data (`zones_spatial`) are saved as RDS files [@rds2024] in the `data/cleaned_data/` directory. These RDS files are compact, fast to read and preserve the structure of the R objects, making them ideal for downstream analysis.
 
 ```r
 saveRDS(combined_data$nb_vald, "data/cleaned_data/combined_nb_vald.rds")
@@ -340,12 +340,12 @@ main <- function(years) {
 main(c("2018", "2019", "2020", "2021", "2022", "2023"))
 ```
 
-The `main()` function is called with a list of years to process, ensuring that the data cleaning and export steps are applied consistently to all selected years. This approach streamlines the data preparation process, making it efficient, reproducible, and scalable for future analyses (e.g., adding new years or updating existing data).
+The `main()` function is called with a list of years to process, ensuring that the data cleaning and export steps are applied consistently to all selected years. This approach streamlines the data preparation process, making it efficient, reproducible and scalable for future analyses (e.g., adding new years or updating existing data).
 
 ### Tools and Libraries
-The data cleaning process relies on several R packages that provide powerful tools for data manipulation, spatial processing, and text formatting. To summarize, the key packages used in the data preparation workflow include:
+The data cleaning process relies on several R packages that provide powerful tools for data manipulation, spatial processing and text formatting. In summary, the key packages used in the data preparation workflow include:
 
-- `dplyr`: For efficient data manipulation, filtering, and summarization. [@dplyr2023]
+- `dplyr`: For efficient data manipulation, filtering and summarization. [@dplyr2023]
 - `readr`: For reading delimited files with flexible parsing options. [@readr2024]
 - `sf`: For managing and processing spatial data, including transformations and centroid calculations. [@sf2018;@sf2023]
 - `lubridate`:  For seamless handling of date formats and conversions. [@lubridate2011]
@@ -357,30 +357,30 @@ The data cleanup and processing workflow produces the following key outputs:
 
 - `combined_nb_vald.rds`: A cleaned dataset containing daily validation counts for all stations.
 - `combined_profil.rds`: A combined dataset with hourly profiles showing validation percentages by day type and hourly intervals.
-- `zones_spatial.rds`: A "spatial" dataset containing station names, unique IDs, and their geographic coordinates (latitude and longitude).
+- `zones_spatial.rds`: A "spatial" dataset containing station names, unique IDs and their geographic coordinates (latitude and longitude).
 
-The cleaning process ensures that the data is accurate, consistent, and properly formatted for downstream analysis and visualization. These outputs provide a robust foundation for exploring ridership trends, performing geospatial analysis, and building interactive visualizations.
+The cleaning process ensures that the data is accurate, consistent and properly formatted for downstream analysis and visualization. These outputs provide a solid foundation for exploring ridership trends, performing geospatial analysis and building interactive visualizations.
 
 # Exploratory Data Analysis in Shiny
 
 ## Overview
 
-The Exploratory Data Analysis (EDA) is integrated directly into the Shiny application [@shiny2024] and provides an interactive platform for analyzing ridership patterns in the IDF region. The application includes several tabs that provide dynamic visualizations and analysis tools. The main objectives of the EDA through the app are:
+The Exploratory Data Analysis (EDA) is integrated directly into the Shiny application [@shiny2024] and provides an interactive platform for analyzing ridership patterns in the IDF region. The application includes several tabs that provide dynamic visualizations and analysis tools. The main objectives of the EDA through the app are to:
 
-1. Analyze trends over time (yearly, monthly and weekly).
+1. Analyze trends over time (annual, monthly and weekly).
 2. Allow comparisons between different time periods.
 3. Examine ridership patterns and spatial distribution at the station level.
-4. Visualize forecasting results for future ridership.
+4. Visualize forecast results for future ridership.
 
 ## Key EDA Features and Functionality
 
-This subsection discusses the code and approach used to implement the main features and functionality of the dynamic Shiny application. The graphical output and analysis for certain static scenarios is covered in the @sec-norms-statistical-methods section.
+This subsection discusses the code and approach used to implement the main features and functionality of the dynamic Shiny application. The graphical output and analysis for certain static scenarios is covered in the @sec-norms-statistical-methods.
 
 ### Total Validations
 
 The **Total Validations** tab in the Shiny application provides users with an overview of ridership trends by summarizing the total number of validations (entries into the network) on a yearly and monthly level. This functionality uses R's `ggplot2` [@ggplot2016] library to create visually appealing graphs that highlight the aggregated validation counts.
 
-The first plot, `Yearly Total Validations`, groups the data by year and calculates the total number of validations for each year. The `mutate()` function extracts the year from the date column (`jour`), and the `group_by()` function ensures that the calculations are performed for each distinct year. The `summarize()` function aggregates the data by summing the number of validations (`nb_vald`). The results are visualized as a bar chart, where the x-axis represents the years and the y-axis shows the total number of validations. The minimal theme (`theme_minimal()`) ensures that the chart remains clear and professional.
+The first plot, `Yearly Total Validations`, groups the data by year and calculates the total number of validations for each year. The `mutate()` function extracts the year from the date column (`jour`) and the `group_by()` function ensures that the calculations are performed for each seperate year. The `summarize()` function aggregates the data by summing the number of validations (`nb_vald`). The results are visualized as a bar chart, where the x-axis represents the years and the y-axis shows the total number of validations. The minimal theme (`theme_minimal()`) keeps the chart clean and professional.
 
 ```r
 output$yearlySumPlot <- renderPlot({
@@ -417,9 +417,9 @@ These visualizations provide an intuitive way to explore overall traffic trends 
 
 ### Trends
 
-The **Trends** tab in the Shiny app allows users to explore ridership patterns across multiple time dimensions, including yearly, monthly, and weekly trends. This functionality helps identify long-term changes, seasonal variations, and weekday usage patterns, all visualized with dynamic and interactive charts.
+The **Trends** tab in the Shiny app allows users to explore ridership patterns across multiple time dimensions, including yearly, monthly and weekly trends. This functionality helps identify long-term changes, seasonal variations and weekday usage patterns, all visualized with dynamic and interactive charts.
 
-The `Yearly Trend` plot calculates the average number of validations (`avg_vald`) for each year. The `mutate()` function is used to extract the year from the date column (`jour`), and the data is grouped by year using `group_by()`. The average validations are calculated using `summarize()`, and the results are plotted as a line chart with each year on the x-axis and the average validations on the y-axis. Points are added to highlight the yearly averages, and the minimalist theme provides clarity.
+The `Yearly Trend` plot calculates the average number of validations (`avg_vald`) for each year. The `mutate()` function is used to extract the year from the date column (`jour`) and the data is grouped by year using `group_by()`. The average validations are calculated using `summarize()` and the results are plotted as a line chart with each year on the x-axis and the average validations on the y-axis. Points are added to highlight the yearly averages and the minimalist theme provides clarity.
 
 ```r
 output$yearlyTrendPlot <- renderPlot({
@@ -436,7 +436,7 @@ output$yearlyTrendPlot <- renderPlot({
 })
 ```
 
-The `Monthly Trend` plot provides a more granular view by grouping the data by month. The `floor_date()` function is used to group validations by the start of each month, and `summarize()` is used to calculate the average validations for each month. The results are plotted as a line graph, with markers added for clarity.
+The `Monthly Trend` plot provides a more granular view by grouping the data by month. The `floor_date()` function is used to group the validations by the start of each month and `summarize()` is used to calculate the average validations for each month. The results are plotted as a line graph, with markers added for clarity.
 
 ```r
 output$monthlyTrendPlot <- renderPlot({
@@ -453,7 +453,7 @@ output$monthlyTrendPlot <- renderPlot({
 })
 ```
 
-The `Weekday Trend` plot focuses on daily patterns by grouping data by day of the week. The `wday()` function assigns a weekday label (e.g., Monday, Tuesday), and `summarize()` calculates the average number of validations for each weekday. A bar graph is then used to visualize the average validations for each day, highlighting differences between, for example, weekdays and weekends.
+The `Weekday Trend` plot focuses on daily patterns by grouping data by day of the week. The `wday()` function assigns a weekday label (e.g., Monday, Tuesday) and `summarize()` calculates the average number of validations for each weekday. A bar graph is then used to visualize the average validations for each day, highlighting differences between weekdays and weekends, for example.
 
 ```r
 output$weekdayTrendPlot <- renderPlot({
@@ -469,11 +469,11 @@ output$weekdayTrendPlot <- renderPlot({
 })
 ```
 
-These visualizations provide a detailed examination of ridership patterns, making it easy to identify trends such as seasonal ridership spikes, long-term annual growth or decline, and differences between weekday and weekend ridership.
+These visualizations provide a detailed examination of ridership patterns, making it easy to identify trends such as seasonal ridership spikes, long-term annual growth or decline and differences between weekday and weekend ridership.
 
 ### Comparison
 
-The **Comparison** tab in the Shiny app helps analyze ridership patterns over two user-defined time periods. This functionality provides detailed comparisons of daily trends, weekday patterns, and total validations to help identify changes or anomalies between the selected time periods.
+The **Comparison** tab in the Shiny app helps analyze ridership patterns over two user-defined time periods. This feature provides detailed comparisons of daily trends, weekday patterns and total validations to help identify changes or anomalies between the selected time periods.
 
 The `Daily Comparison` graph shows the average number of validations per day for each time period. The data is grouped by relative day (a numerical index representing days within the selected time period) and Period (`Period 1` or `Period 2`). The display uses a line chart with different colors for each period, allowing the comparison of daily trends between the two periods.
 
@@ -497,7 +497,7 @@ output$comparisonDaysPlot <- renderPlot({
 })
 ```
 
-The `Weekday Comparison` graph highlights the differences in ridership patterns for each day of the week between the two selected periods. The data is grouped by weekday (e.g., Monday, Tuesday) and time period, and averages are calculated. A bar graph is used to display the results, with different colors representing each period.
+The `Weekday Comparison` graph highlights the differences in ridership patterns for each day of the week between the two selected periods. The data is grouped by weekday (e.g., Monday, Tuesday) and time period and averages are calculated. A bar graph is used to display the results, with different colors representing each time period.
 
 ```r
 output$comparisonWeekdayPlot <- renderPlot({
@@ -518,7 +518,7 @@ output$comparisonWeekdayPlot <- renderPlot({
 })
 ```
 
-The `Daily Total Validations` graph compares the cumulative number of validations for each day of the selected time periods. The data is grouped by relative day and period, and the total number of validations is calculated. A line chart is used, similar to the `Average Validations` plot, but focusing on the total number of validations.
+The `Daily Total Validations` graph compares the cumulative number of validations for each day of the selected time periods. The data is grouped by relative day and period and the total number of validations is calculated. A line chart is used, similar to the `Average Validations` plot, but focusing on the total number of validations.
 
 ```r
 output$comparisonDaysPlotTotal <- renderPlot({
@@ -561,13 +561,13 @@ output$comparisonWeekdayPlotTotal <- renderPlot({
 })
 ```
 
-The **Comparison** tab provides a powerful tool for evaluating how ridership patterns vary between two selected time periods, such as comparing pre- and post-pandemic trends. By analyzing both average and total validations for daily and weekday patterns, one can understand temporal shifts in ridership. These visualizations are particularly valuable for identifying the impact of external factors, such as unforeseen events or policy changes on public transport ridership.
+The **Comparison** tab is a powerful tool for evaluating how ridership patterns vary between two selected time periods, such as comparing pre- and post-pandemic trends. By analyzing both average and total validations for daily and weekday patterns, one can understand temporal shifts in ridership. These visualizations are particularly valuable for identifying the impact of external factors, such as unforeseen events or policy changes, on public transport ridership.
 
 ### Stations Map
 
-The **Stations Map** tab in the Shiny app allows the user to explore the spatial distribution of ridership across stations. This tab integrates ridership data with geospatial data to create an interactive map using the `leaflet` package. The map provides a visual representation of station locations, ridership, and additional statistics to analyze ridership trends at the station level.
+The **Stations Map** tab in the Shiny app allows users to explore the spatial distribution of ridership across stations. This tab integrates ridership data with geospatial data to create an interactive map using the `leaflet` package. The map provides a visual representation of station locations, ridership and additional statistics to analyze ridership trends at the station level.
 
-The main feature of this tab is an interactive map that displays the geographic locations of stations. Each station is represented by a marker, with the size of the marker scaled according to the total number of validations (`total_validations`) for the selected year. The markers are color-coded to indicate whether they match the user-selected station, with green representing the selected station and red for others.
+The main feature of this tab is an interactive map that displays the geographic locations of stations. Each station is represented by a marker, with the size of the marker scaled according to the total number of validations (`total_validations`) for the selected year. The markers are color-coded to indicate whether they correspond to the user-selected station, with green representing the selected station and red for others.
 
 ```r
 output$stationMap <- renderLeaflet({
@@ -602,7 +602,7 @@ output$stationMap <- renderLeaflet({
 })
 ```
 
-In addition to the interactive map, this tab provides detailed statistics for the selected station. These statistics include the total number of validations for the selected year, the average daily validations, and the minimum and maximum daily validations.
+In addition to the interactive map, this tab provides detailed statistics for the selected station. These statistics include the total number of validations for the selected year, the average daily validations and the minimum and maximum daily validations.
 
 ```r
 output$stationStats <- renderPrint({
@@ -734,7 +734,7 @@ output$forecastPlot <- renderPlot({
 })
 ```
 
-In addition to the plot, the application displays detailed summary statistics of the forecast. These statistics include key metrics such as mean, median, and confidence intervals for the predicted values. This information helps to gain deeper insight into the reliability and variability of the predictions.
+In addition to the plot, the application displays detailed summary statistics of the forecast. These statistics include key metrics such as mean, median and confidence intervals for the predicted values. This information helps to gain deeper insight into the reliability and variability of the predictions.
 
 ```r
 output$forecastStats <- renderPrint({
@@ -754,8 +754,8 @@ The **Forecasting** tab is a predictive tool for anticipating future ridership p
 The **UI** is designed with a `fluidPage` layout that includes a sidebar for user input and a main panel for displaying visualizations and outputs. Key features of the UI include:
 
 - **Sidebar Controls**:
-  - **Comparison Tab**: Users can select two time periods for comparison by specifying start dates and a comparison duration in days.
-  - **Station Map Tab**: Inputs include a slider for filtering stations by minimum validations, a drop-down for selecting a station by name, and another for selecting a year.
+  - **Comparison Tab**: Users can select two time periods for comparison by entering start dates and a comparison duration in days.
+  - **Station Map Tab**: Inputs include a slider for filtering stations by minimum validations, a drop-down for selecting a station by name and another for selecting a year.
   - **Forecasting Tab**: A slider to select the number of days to forecast.
 - **Main Panel**:
   - **Total Validations**: Displays yearly and monthly validation totals.
@@ -952,7 +952,7 @@ rsconnect::deployApp(
 )
 ```
 
-The `appDir` parameter specifies the directory containing the application files, while `appName` sets the name of the deployed application. The `forceUpdate` parameter ensures that the application is updated if it already exists. The `appFiles` parameter specifies the files to be deployed, including the main application script (`app.R`), helper functions (`helper.R`), and cleaned data files.
+The `appDir` parameter specifies the directory containing the application files, while `appName` sets the name of the deployed application. The `forceUpdate` parameter ensures that the application is updated if it already exists. The `appFiles` parameter specifies the files to deploy, including the main application script (`app.R`), helper functions (`helper.R`) and cleaned data files.
 
 #### Automated Deployment (GitHub Actions)
 
@@ -980,41 +980,48 @@ jobs:
         with:
           r-version: "4.3.3"
 
-      - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install R Dependencies (renv)
+        uses: r-lib/actions/setup-renv@v2
 
       - name: Export cleaned data
         run: |
           mkdir 'data/cleaned_data'
-          R -e 'source("cleaning.R")'
+
+          R -e '
+          YEARS <- c("2018", "2019", "2020", "2021", "2022", "2023")
+          BASE_PATH <- "."
+          source("cleaning.R")
+          '
 
       - name: Deploy Shiny App
         run: |
-          R -e 'rsconnect::setAccountInfo(name="${{ secrets.SHINYAPPS_USER }}", token="${{ secrets.SHINYAPPS_TOKEN }}", secret="${{ secrets.SHINYAPPS_SECRET }}")'
-          R -e 'rsconnect::deployApp("./", appName="DSViz_Project", forceUpdate=TRUE, appFiles=c("app.R", "helper.R", list.files("data/cleaned_data", full.names=TRUE, recursive=TRUE)))'
+          R -e '
+          rsconnect::setAccountInfo(name="${{ secrets.SHINYAPPS_USER }}", token="${{ secrets.SHINYAPPS_TOKEN }}", secret="${{ secrets.SHINYAPPS_SECRET }}")
+          rsconnect::deployApp("./", appName="DSViz_Project", forceUpdate=TRUE, appFiles=c("app.R", "helper.R", list.files("data/cleaned_data", full.names=TRUE, recursive=TRUE)))
+          '
 ```
 
 1. **Trigger Conditions**:
    - Triggers automatically on a push to the `main` branch.
-   - Can also be triggered manually using `workflow_dispatch`.
+   - Can also be triggered manually with `workflow_dispatch`.
 2. **Setup Environment**:
    - The R environment is set up using `r-lib/actions/setup-r` [@r_github_actions2021] with the specified R version (`4.3.3`).
-   - Dependencies are installed using `r-lib/actions/setup-r-dependencies` [@r_github_actions2021].
+   - Dependencies are installed using `r-lib/actions/setup-renv` [@r_github_actions2021].
 3. **Export Cleaned Data**:
-   - The `cleaning.R` script is executed to generate the cleaned datasets, which are stored in the `data/cleaned_data` directory.
+   - The `cleaning.R` script is executed to generate the cleaned datasets for years `2018-2023`, which are stored in the `data/cleaned_data` directory.
 4. **Deploy Shiny App**:
    - The `rsconnect::setAccountInfo()` function authenticates to Shinyapps.io using the secrets stored in the repository (`SHINYAPPS_USER`, `SHINYAPPS_TOKEN`, `SHINYAPPS_SECRET`).
    - The application is deployed with the required files and configurations using `rsconnect::deployApp()`.
 
-This workflow ensures a seamless, automated deployment process, making it easier to maintain and update the application without manual intervention.
+This workflow provides a seamless, automated deployment process that makes it easier to maintain and update the application without manual intervention.
 
 # Norms and Statistical Methods {#sec-norms-statistical-methods}
 
-The implementations used in this section reflect the logic used in the real deployed application, but are designed as "static" implementations for processing data in a non-interactive environment. The focus is on demonstrating potential outputs generated by the dynamic components of the deployed application.
+The implementations used in this section reflect the logic used in the actual deployed application, but are designed as "static" implementations for processing data in a non-interactive environment. The focus is on demonstrating potential outputs generated by the dynamic components of the deployed application.
 
 ## Data Cleaning
 
-The data cleaning process for ridership and profile data is performed for the years 2018-2023. The cleaning process focuses on handling missing values, removing outliers, and standardizing the dataset:
+The data cleaning process for ridership and profile data is performed for the years 2018-2023. The cleaning process focuses on handling missing values, removing outliers and standardizing the dataset:
 
 ```{r}
 #| message: true
@@ -1044,9 +1051,11 @@ The following table summarizes the cleaning results for each year:
 
 : Data Cleaning Summary {#tbl-data_cleaning_summary}
 
+Altough the percentage of rows removed is relatively small, testing the outlier removal process has shown that important information is lost. Therefore, when deploying the application, the outlier removal step is skipped to preserve the integrity of the data. Otherwise, important stations with high ridership would be considered outliers and removed, such as Chatelet Les Halles, "Gare de Lyon", "Gare du Nord", "Defense", etc.
+
 ## Data Import
 
-The cleaned datasets generated in the previous step is being imported into the current session for further analysis and visualization. This step loads the necessary data files into memory:
+The cleaned datasets generated in the previous step are imported into the current session for further analysis and visualization. This step loads the necessary data files into memory:
 
 ```{r}
 library(dplyr)
@@ -1064,7 +1073,7 @@ zones_spatial <- readRDS("../data/cleaned_data/zones_spatial.rds")
 
 ## Yearly Total Validations
 
-This bar chart shows the total number of public transport validations for each year between 2018 and 2023. It provides an annual summary of ridership data and provides insight into long-term trends.
+This bar chart shows the total number of public transport validations for each year between 2018 and 2023. It provides an annual summary of ridership data and gives insight into long-term trends.
 
 ```{r}
 yearly_sum <- combined_nb_vald |>
@@ -1078,8 +1087,8 @@ ggplot(yearly_sum, aes(x = year, y = total_validations)) +
     theme_minimal()
 ```
 
-- **Peak Ridership (2018-2019)**: The highest total validations occurred in 2018 and 2019, reflecting the high use of public transportation prior to the COVID-19 pandemic.
-- **Pandemic Impact (2020)**: A significant decrease in validations is seen in 2020, likely due to lockdowns, remote work, and reduced mobility during the pandemic.
+- **Peak Ridership (2018-2019)**: The highest number of total validations occurred in 2018 and 2019, reflecting the high use of public transportation prior to the COVID-19 pandemic.
+- **Pandemic Impact (2020)**: A significant decrease in validations is seen in 2020, likely due to lockdowns, remote work and reduced mobility during the pandemic.
 - **Partial Recovery (2021-2022)**: Ridership shows a gradual recovery in 2021 and 2022 as restrictions are eased.
 - **2023 Data Restriction**: The relatively lower total validations in 2023 are due to the lack of second semester data.
 
@@ -1102,10 +1111,10 @@ ggplot(monthly_sum, aes(x = month, y = total_validations)) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-- **Regular Seasonal Patterns (2018-2019)**: Validations show consistent monthly patterns, reflecting seasonal fluctuations in public transportation usage.
+- **Regular Seasonal Patterns (2018-2019)**: Validations show consistent monthly patterns that reflect seasonal fluctuations in public transportation usage.
 - **Pandemic Disruption (2020)**: A dramatic drop in monthly validations is observed beginning in early 2020, coinciding with the onset of the COVID-19 pandemic.
 - **Recovery in Later Years (2021-2022)**: Monthly validations show a gradual recovery as pandemic-related restrictions ease. However, they remain below pre-pandemic levels in some months.
-- **Incomplete Data (2023)**: Data for 2023 include only the first half of the year, as data for the second half of the year is not available at the time of analysis.
+- **Incomplete Data (2023)**: Data for 2023 includes only the first half of the year, as data for the second half of the year is not available at the time of analysis.
 
 This graph highlights the detailed temporal impact of external events, such as the pandemic, on public transport usage patterns at a monthly resolution.
 
@@ -1128,7 +1137,7 @@ ggplot(weekday_trend, aes(x = weekday, y = mean_vald)) +
 - **Peak Usage on Weekdays**: Monday through Friday have consistently high average validations, indicating regular use of public transportation during the workday.
 - **Lower Usage on Weekends**: A significant drop is observed on Saturdays and Sundays, reflecting reduced commuting activity and leisure-oriented travel patterns.
 
-This trend highlights the strong influence of the workweek schedule on public transport use.
+This trend highlights the strong influence of the workweek schedule on the use of public transport.
 
 ## Comparison of two periods
 
@@ -1181,7 +1190,7 @@ ggplot(daily_trend, aes(x = relative_day, y = avg_vald, color = period, group = 
 ```
 
 - **Distinct Patterns**: Period 1 (January 2020) and Period 2 (January 2022) show different trends, reflecting possible changes in travel behavior over time.
-- **Higher Activity in Period 2**: Period 2 consistently shows higher average validations, suggesting increased ridership recovery in 2022.
+- **Higher Activity in Period 2**: Period 2 consistently shows higher average validations, suggesting an increased ridership recovery in 2022.
 - **Weekday Peaks**: Both periods show periodic peaks corresponding to weekdays, followed by declines on weekends, consistent with commuter trends.
 
 This comparison highlights the usefulness of analyzing ridership trends over time to identify shifts in transport usage during and after the pandemic.
@@ -1209,7 +1218,7 @@ ggplot(weekday_trend, aes(x = weekday, y = avg_vald, fill = period)) +
 - **Consistent Weekday Peaks**: Both periods show a clear weekday trend, with validations peaking Monday through Friday and declining on weekends.
 - **Saturday Variance**: The difference in validations between the two periods is less pronounced on Saturdays, possibly reflecting similar levels of leisure activity during both periods.
 
-This graph underscores the importance of weekday trends in analyzing public transport use and highlights shifts in commuter behavior between the two periods.
+This graph emphasizes the importance of weekday trends in the analysis of public transport use and highlights shifts in commuter behavior between the two periods.
 
 ## Spatial Distribution of Station Validations
 
@@ -1251,14 +1260,14 @@ leaflet(vald_spatial_joined) |>
 ```
 
 - **Densely Populated Areas**: Stations in central regions have denser clusters, indicating higher ridership in urban centers.
-- **Validation Scaling**: Larger circles represent stations with higher validation counts, indicating key activity centers within the network.
+- **Validation Scaling**: Larger circles represent stations with higher validation counts, indicating major activity centers within the network.
 - **Highlighted Station**: The selected station (`"NOISY-CHAMPS"`) is uniquely identified, providing a focus for further analysis and comparison.
 
 This spatial representation provides an intuitive view of network usage patterns, helping to identify areas of high demand and prioritize resource allocation.
 
 ## Hourly Validation Profiles for "NOISY-CHAMPS" (2023)
 
-The graph shows the hourly distribution of validations at the `"NOISY-CHAMPS"` station for the year `2023`. Validation percentages are grouped by day type, such as weekdays, weekends, and holidays, to reveal temporal patterns in ridership.
+The graph shows the hourly distribution of validations at the `"NOISY-CHAMPS"` station for the year `2023`. Validation percentages are grouped by day type, such as weekdays, weekends and holidays, to reveal temporal patterns in ridership.
 
 ```{r}
 input <- list()
@@ -1309,9 +1318,9 @@ ggplot(station_profil, aes(x = trnc_horr_60, y = pourc_validations, group = cat_
     )
 ```
 
-- **Morning Peak**: Validation percentages peak sharply between 7 and 9 AM., especially on non-school vacation weekdays (`JOHV`), indicating heavy commuter traffic.
+- **Morning Peak**: Validation percentages peak sharply between 7 and 9 AM, especially on non-school vacation weekdays (`JOHV`), indicating heavy commuter traffic.
 - **Evening Peak**: A secondary peak occurs from 5 PM to 7 PM, reflecting the evening rush hour.
-- **Day Type Differences**: Weekend and holiday profiles (e.g. `DIJFP`, `SAVS`) show a more spread out activity pattern with less pronounced peaks compared to weekdays.
+- **Day Type Differences**: Weekend and holiday profiles (e.g. `DIJFP`, `SAVS`) show a more dispersed activity pattern with less pronounced peaks compared to weekdays.
 - **Off-Peak Hours**: Minimal activity is observed during the late night and early morning hours (midnight to 5 AM), consistent across all day types.
 
 This visualization highlights commuter behavior and the influence of day types on ridership patterns, providing valuable insight for resource planning and scheduling.
@@ -1349,26 +1358,26 @@ autoplot(forecast_result) +
 ```
 
 - **Historical Data Overview**: The black line represents the total daily validations from 2018 to 2023 S1, showing seasonal and periodic trends.
-- **Forecast Data**: The blue shaded region represents the forecast for 2023 S2, including a confidence interval.
+- **Forecast Data**: The blue shaded area represents the forecast for 2023 S2, including a confidence interval.
   - The darker blue line indicates the predicted central trend, suggesting an overall increase in ridership.
   - The lighter blue bands indicate uncertainty and extend further into the future, reflecting increased variability.
 - **Seasonal Patterns**: The forecast captures and projects the seasonal trends seen in the historical data, adding to the reliability of the model.
 
-This forecast is critical for planning resources, forecasting demand, and effectively managing operations in 2023 and beyond.
+This forecast is critical for planning resources, forecasting demand and effectively managing operations in 2023 and beyond.
 
 # Conclusion
 
 ## Challenges and Limitations
 
-Several challenges emerged throughout the project. The quality of the dataset was an issue as inconsistencies required additional pre-processing such as filtering of outliers and standardization of columns. In addition, the COVID-19 pandemic introduced irregularities in ridership patterns, particularly in 2020 and 2021, which made trend analysis and forecasting difficult. These disruptions made it difficult to effectively apply standard time series models. In addition, the integration of spatial data with multi-year ridership data required careful optimization to ensure deployment efficiency and user interactivity.
+Several challenges were encountered throughout the project. The quality of the dataset was an issue, as inconsistencies required additional preprocessing such as column standardization and data cleaning in general. In addition, the COVID-19 pandemic introduced irregularities in ridership patterns, particularly in 2020 and 2021, which made trend analysis and forecasting difficult. These disruptions made it difficult to effectively apply standard time series models. In addition, the integration of spatial data with multi-year ridership data required careful optimization to ensure deployment efficiency and user interactivity.
 
 ## Future work
 
-This analysis provides a foundation for future enhancements. Advanced predictive models, such as machine learning techniques, could be explored to improve prediction accuracy and account for non-linear trends. In addition, by reducing the dataset to a subset, not all possible analyses were performed. Future work could focus on the different types of transit and their tickets, the `CATEGORY_TITRE` could be used to analyze the impact of different ticket types on ridership. In addition, external factors such as weather or major events such as the Olympics could be incorporated to provide a more comprehensive analysis of ridership patterns.
+This analysis provides a foundation for future enhancements. Advanced predictive models, such as machine learning techniques, could be explored to improve prediction accuracy and account for non-linear trends. In addition, by reducing the dataset to a subset, not all possible analyses were performed. Future work could focus on the different types of transit and their tickets, the `CATEGORY_TITRE` could be used to analyze the impact of different ticket types on ridership. In addition, external factors such as weather or major events such as the Olympics could be included to provide a more comprehensive analysis of ridership patterns.
 
 ## Summary
 
-This project analyzed public transport ridership in the IDF region from 2018 to 2023, providing valuable insights into patterns and trends. A robust data pipeline was developed to clean, integrate, and prepare both ridership and spatial datasets. Analysis revealed yearly, monthly, and weekday trends, demonstrating the impact of COVID-19 on ridership and subsequent recovery. The project also included interactive and static visualizations that highlighted spatial and temporal variations in ridership. A forecast for the second half of 2023 was generated. In addition, an automated workflow for deployment to Shinyapps.io was developed, allowing for seamless updates and maintenance of the application.
+This project analyzed public transport ridership in the IDF region from 2018 to 2023, providing valuable insights into patterns and trends. A robust data pipeline was developed to clean, integrate and prepare both ridership and spatial datasets. Analysis revealed yearly, monthly and weekday trends, demonstrating the impact of COVID-19 on ridership and subsequent recovery. The project also included interactive and static visualizations that highlighted spatial and temporal variations in ridership. A forecast for the second half of 2023 was generated. In addition, an automated workflow for deployment to Shinyapps.io was developed, allowing for seamless updates and maintenance of the application.
 
 The deployed application can be found at: [DSViz: IDF Ridership Analysis](https://luckerma.shinyapps.io/DSViz_Project/)
 
