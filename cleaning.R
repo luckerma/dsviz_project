@@ -44,10 +44,11 @@ read_data <- function(year, base_path = ".") {
             jour = year
         )
 
-    # Handle missing values / TODO: handle missing values
+    # Remove missing values
     nb_s1_df <- na.omit(nb_s1_df)
     profil_s1_df <- na.omit(profil_s1_df)
 
+    # Check for second semester data
     if (!file.exists(nb_s2) || !file.exists(profil_s2)) {
         message("Second semester data not found for year: ", year)
 
@@ -124,7 +125,9 @@ read_data <- function(year, base_path = ".") {
 
 remove_outliers <- function(data) {
     for (col in colnames(data)) {
+        # Only remove outliers for numeric columns
         if (is.numeric(data[[col]])) {
+            # Calculate IQR
             q1 <- quantile(data[[col]], 0.25, na.rm = TRUE)
             q3 <- quantile(data[[col]], 0.75, na.rm = TRUE)
             iqr <- q3 - q1
@@ -132,7 +135,12 @@ remove_outliers <- function(data) {
             upper_bound <- q3 + 1.5 * iqr
 
             # Filter outliers
+            unique_arret <- unique(data$libelle_arret)
             data <- data[data[[col]] >= lower_bound & data[[col]] <= upper_bound, ]
+            removed_arret <- setdiff(unique_arret, unique(data$libelle_arret))
+            if (length(removed_arret) > 0) {
+                message("Removed outliers for '", col, "': ", removed_arret)
+            }
         }
     }
 
@@ -149,7 +157,7 @@ read_clean_data <- function(years, base_path) {
         original_nb_vald_rows <- nrow(data$nb_vald)
         original_profil_rows <- nrow(data$profil)
 
-        # TODO: Fix outlier removal, it's removing too many rows (gare and defense)
+        # TODO: Fix outlier removal, it's removing too many rows (Chatelet, Gare de L'Est, Nord, Lyon, Montparnasse, Defense, ...)
         # data$nb_vald <- remove_outliers(data$nb_vald)
         # data$profil <- remove_outliers(data$profil)
 
