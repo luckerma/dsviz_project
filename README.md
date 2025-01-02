@@ -81,3 +81,7 @@ https://{username}.shinyapps.io/DSViz_Project/
 ```bash
 quarto preview ./report/
 ```
+
+```bash
+quarto render ./report/ --to pdf
+```

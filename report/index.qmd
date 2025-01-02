@@ -9,29 +9,33 @@ authors:
         country: "Germany"
     corresponding: true
     orcid: "0009-0005-2957-6331"
-  - name: "Nikethan"
+  - name: "Nikethan Nimalakumaran"
     affiliation:
       - id: UGE
-        name: "Gustave Eiffel University"
-        city: "Paris"
+        name: "Université Gustave Eiffel"
+        city: "Champs-sur-Marne"
         country: "France"
     corresponding: true
-  - name: "Adel"
+  - name: "Mohammed Adel Djelloul Abbou"
     affiliation:
       - ref: UGE
     corresponding: true
-  - name: "Cong Son DUONG"
+  - name: "Cong Son Duong"
     affiliation:
       - ref: UGE
     corresponding: true
     orcid: "0000-0003-1823-8992"
-  - name: "Francky"
+  - name: "Francky Rasataharisoa"
     affiliation:
-      - id: FRU
-        name: "Francky's University"
+      - id: EMI
+        name: "Ecole de Management et d'Innovation Technologique"
+        city: "Fianarantsoa"
+        country: "Madagascar"
     corresponding: true
 bibliography: references.bib
 date: last-modified
+number-sections: true
+link-citations: true
 execute: 
   eval: true
   echo: false
