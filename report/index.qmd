@@ -1,5 +1,6 @@
 ---
-title: "DSViz: IDF Ridership Analysis"
+title: "IDF Ridership Analysis"
+subtitle: "UGE: M2 SIA - DSViz Project Report"
 authors:
   - name: "Luca Uckermann"
     affiliation:
@@ -8,6 +9,7 @@ authors:
         city: "Cologne"
         country: "Germany"
     corresponding: true
+    email: "luca_simon.uckermann@smail.th-koeln.de"
     orcid: "0009-0005-2957-6331"
   - name: "Nikethan Nimalakumaran"
     affiliation:
@@ -16,14 +18,17 @@ authors:
         city: "Champs-sur-Marne"
         country: "France"
     corresponding: true
+    email: "nimalakumaran@edu.univ-eiffel.fr"
   - name: "Mohammed Adel Djelloul Abbou"
     affiliation:
       - ref: UGE
     corresponding: true
+    email: "djelloulabbou@edu.univ-eiffel.fr"
   - name: "Cong Son Duong"
     affiliation:
       - ref: UGE
     corresponding: true
+    email: "cong-son.duong@edu.univ-eiffel.fr"
     orcid: "0000-0003-1823-8992"
   - name: "Francky Rasataharisoa"
     affiliation:
@@ -32,6 +37,7 @@ authors:
         city: "Fianarantsoa"
         country: "Madagascar"
     corresponding: true
+    email: "rasataharisoa@edu.univ-eiffel.fr"
 bibliography: references.bib
 date: last-modified
 number-sections: true
@@ -1051,7 +1057,7 @@ The following table summarizes the cleaning results for each year:
 
 : Data Cleaning Summary {#tbl-data_cleaning_summary}
 
-Altough the percentage of rows removed is relatively small, testing the outlier removal process has shown that important information is lost. Therefore, when deploying the application, the outlier removal step is skipped to preserve the integrity of the data. Otherwise, important stations with high ridership would be considered outliers and removed, such as Chatelet Les Halles, "Gare de Lyon", "Gare du Nord", "Defense", etc.
+Altough the percentage of rows removed is relatively small, testing the outlier removal process has shown that important information is lost. Therefore, when deploying the application, the outlier removal step is skipped to preserve the integrity of the data. Otherwise, important stations with high ridership would be considered outliers and removed, such as "Chatelet Les Halles", "Gare de Lyon", "Gare du Nord", "Defense", etc.
 
 ## Data Import
 
