@@ -1057,7 +1057,7 @@ The following table summarizes the cleaning results for each year:
 
 : Data Cleaning Summary {#tbl-data_cleaning_summary}
 
-Altough the percentage of rows removed is relatively small, testing the outlier removal process has shown that important information is lost. Therefore, when deploying the application, the outlier removal step is skipped to preserve the integrity of the data. Otherwise, important stations with high ridership would be considered outliers and removed, such as Chatelet Les Halles, "Gare de Lyon", "Gare du Nord", "Defense", etc.
+Altough the percentage of rows removed is relatively small, testing the outlier removal process has shown that important information is lost. Therefore, when deploying the application, the outlier removal step is skipped to preserve the integrity of the data. Otherwise, important stations with high ridership would be considered outliers and removed, such as "Chatelet Les Halles", "Gare de Lyon", "Gare du Nord", "Defense", etc.
 
 ## Data Import
 
